@@ -4,7 +4,7 @@
 ## .vsconfig: 多分これも要らない
 *.vsconfig
 ## UpgradeLog.htm: 多分…要らない
-UpgradeLog.htm
+/UpgradeLog.htm
 
 # Unity
 ## https://github.com/github/gitignore/blob/main/Unity.gitignore
