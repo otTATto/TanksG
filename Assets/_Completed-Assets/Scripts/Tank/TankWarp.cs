@@ -15,12 +15,11 @@ public class TankWarp : MonoBehaviour
      void Start()
     {
         // 子オブジェクトのRendererを取得
-        //isBlinking = true;
         _target = GetComponentsInChildren<Renderer>();
     }
         private void Update()
     {
-        if (isBlinking)
+        if (isBlinking)　//点滅の処理
         {
 
             timer += Time.deltaTime;
@@ -28,11 +27,11 @@ public class TankWarp : MonoBehaviour
             var repeatValue = Mathf.Repeat((float)timer, cycle);
             foreach (Renderer renderer in _target) renderer.enabled = repeatValue >= cycle * 0.5f;
 
-            if (timer >= blinkingTime) StopBlinking();
+            if (timer >= blinkingTime) StopBlinking();　//時間になったら点滅が終わる
         }
     }
 
-    public void StartBlinking()
+    public void StartBlinking()　//点滅処理を開始する
     {
         isBlinking = true;
         timer = 0f;
@@ -40,7 +39,7 @@ public class TankWarp : MonoBehaviour
     }
 
 
-    public void StopBlinking()
+    public void StopBlinking()  //点滅処理を終了する
     {
         isBlinking = false;
         foreach (Renderer renderer in _target) renderer.enabled = true;
