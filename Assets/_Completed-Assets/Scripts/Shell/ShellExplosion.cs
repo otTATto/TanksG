@@ -30,7 +30,9 @@ namespace Complete
             {
                 // ... and find their rigidbody.
                 Rigidbody targetRigidbody = colliders[i].GetComponent<Rigidbody> ();
-
+                TankWarp tankWarp = colliders[i].GetComponent<TankWarp>();
+                if (!tankWarp.canWarp)
+                    break;
                 // If they don't have a rigidbody, go on to the next collider.
                 if (!targetRigidbody)
                     continue;
