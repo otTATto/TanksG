@@ -26,19 +26,18 @@ namespace Complete
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
 
         private void TurretTurn (){
-            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime;
-
-            Quaternion turnRotation = Quaternion.Euler (0f, turn, 0f);
-
-            m_Turret.transform.Rotate(0f,turn,0f);
-            //m_TurretRigidbody.MoveRotation (m_TurretRigidbody.rotation * turnRotation);
-
+            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
+            m_Turret.transform.Rotate(0f,turn,0f);//回転
         }
 
         private void Awake ()
         {
-            m_Rigidbody = GetComponent<Rigidbody> ();
-            //m_TurretRigidbody = m_Turret.GetComponent<Rigidbody> ();
+            m_Rigidbody = GetComponent<Rigidbody>();
+            // 砲台のNullチェックを行う
+            if (m_Turret == null)
+            {
+                Debug.LogError("Turret GameObject is not assigned in the Inspector on " + gameObject.name);
+            }
         }
 
 
@@ -46,7 +45,6 @@ namespace Complete
         {
             // When the tank is turned on, make sure it's not kinematic.
             m_Rigidbody.isKinematic = false;
-            //m_TurretRigidbody.isKinematic = false;
 
             // Also reset the input values.
             m_MovementInputValue = 0f;
