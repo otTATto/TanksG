@@ -20,7 +20,7 @@ namespace Complete
         public int m_ShellCapacity = 50;            // 砲弾の最大数
 
         public GameObject m_MinePrefab;                // 地雷のプレハブ
-        public int m_RemainingMines = 0;              // 持っている地雷の数
+        public int m_RemainingMines = 1;              // 持っている地雷の数
         public int m_MineCapacity = 3;                // 地雷の最大数
         public float m_MineSetupTime = 1.5f;          // 地雷設置に要する時間
 
@@ -103,6 +103,7 @@ namespace Complete
             #region 地雷設置の処理
             if (m_RemainingMines > 0 && Input.GetButtonDown(m_MineButton) && !m_IsSettingMine)
             {
+                Debug.Log("地雷設置");
                 StartSettingMine();
             }
 

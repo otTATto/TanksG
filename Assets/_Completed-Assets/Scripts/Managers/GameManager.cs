@@ -132,10 +132,12 @@ namespace Complete
 
         private IEnumerator RoundEnding ()
         {
-            // 残弾数を0にして残弾数の表示を停止
             for (int i = 0; i < m_Tanks.Length; i++)
             {
+                // 残弾数を0にして残弾数の表示を停止
                 m_Tanks[i].SetRemainingShells(0);
+                // 持っている地雷の数を0にリセット
+                m_Tanks[i].SetRemainingMines(0);
             }
 
             // Stop tanks from moving.
@@ -250,6 +252,8 @@ namespace Complete
                 m_Tanks[i].Reset();
                 // 残弾数を10にリセット
                 m_Tanks[i].SetRemainingShells(10);
+                // 持っている地雷の数を0にリセット
+                m_Tanks[i].SetRemainingMines(0);
             }
         }
 

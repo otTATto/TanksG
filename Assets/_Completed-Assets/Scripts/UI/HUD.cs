@@ -12,6 +12,9 @@ namespace Complete
         public GameObject[] tensObjects = new GameObject[tensMax];  // 10の位のアイコン
         public GameObject[] onesObjects = new GameObject[onesMax];  // 1の位のアイコン
 
+        private static int maxMines = 3;
+        public GameObject[] minesObjects = new GameObject[maxMines];  // 地雷のアイコン
+
         private void Start()
         {
             // プレイヤーのTankShootingコンポーネントを取得
@@ -40,11 +43,24 @@ namespace Complete
                 }
                 onesObjects[i - 1] = shellCount;
             }
+
+            // 地雷のアイコンを取得
+            for (int i = 1; i <= maxMines; i++)
+            {
+                GameObject _mines = GameObject.Find("Mines");
+                GameObject mineCount = _mines.transform.Find($"Mine{i}")?.gameObject;
+                if (mineCount == null)
+                {
+                    Debug.LogError($"Mine{i} not found");
+                }
+                minesObjects[i - 1] = mineCount;
+            }
         }
 
         private void Update()
         {
             UpdateShellCount();
+            UpdateMineCount();
         }
 
         private void UpdateShellCount()
@@ -63,6 +79,16 @@ namespace Complete
             for (int i = 1; i <= onesMax; i++)
             {
                 onesObjects[i - 1].SetActive(i <= ones);
+            }
+        }
+
+        private void UpdateMineCount()
+        {
+            int remainingMines = tankShooting.m_RemainingMines;
+
+            for (int i = 1; i <= maxMines; i++)
+            {
+                minesObjects[i - 1].SetActive(i <= remainingMines);
             }
         }
     }
