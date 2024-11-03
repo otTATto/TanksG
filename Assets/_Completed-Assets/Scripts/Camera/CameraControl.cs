@@ -28,20 +28,23 @@ namespace Complete
             Move ();
 
             // Change the size of the camera based.
-            Zoom ();
+            //Zoom ();
         }
 
 
         private void Move ()
         {
             // Find the average position of the targets.
-            FindAveragePosition ();
+            //FindAveragePosition ();
+            transform.rotation=m_Targets[0].rotation; // ターゲットの回転をそのまま適用
+            //transform.position = m_Targets[0].position+new Vector3(0,2,-14);//+ new Vector3(0, 2, -15);
+            transform.position = m_Targets[0].TransformPoint(new Vector3(0, 2, -5));
 
             // Smoothly transition to that position.
-            transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition, ref m_MoveVelocity, m_DampTime);
+            //transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition, ref m_MoveVelocity, m_DampTime);
         }
 
-
+/*
         private void FindAveragePosition ()
         {
             Vector3 averagePos = new Vector3 ();
@@ -116,11 +119,10 @@ namespace Complete
             return size;
         }
 
-
         public void SetStartPositionAndSize ()
         {
             // Find the desired position.
-            FindAveragePosition ();
+            //FindAveragePosition ();
 
             // Set the camera's position to the desired position without damping.
             transform.position = m_DesiredPosition;
@@ -128,5 +130,6 @@ namespace Complete
             // Find and set the required size of the camera.
             m_Camera.orthographicSize = FindRequiredSize ();
         }
+*/
     }
 }

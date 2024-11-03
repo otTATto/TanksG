@@ -55,14 +55,15 @@ namespace Complete
         {
             // Create a collection of transforms the same size as the number of tanks.
             Transform[] targets = new Transform[m_Tanks.Length];
-
+            targets[0]=m_Tanks[0].m_Movement.m_Turret.transform;
+            /*
             // For each of these transforms...
             for (int i = 0; i < targets.Length; i++)
             {
                 // ... set it to the appropriate tank transform.
                 targets[i] = m_Tanks[i].m_Instance.transform;
             }
-
+            */
             // These are the targets the camera should follow.
             m_CameraControl.m_Targets = targets;
         }
@@ -102,7 +103,7 @@ namespace Complete
             DisableTankControl ();
 
             // Snap the camera's zoom and position to something appropriate for the reset tanks.
-            m_CameraControl.SetStartPositionAndSize ();
+            //m_CameraControl.SetStartPositionAndSize ();
 
             // Increment the round number and display text showing the players what round it is.
             m_RoundNumber++;

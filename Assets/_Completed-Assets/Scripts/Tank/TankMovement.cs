@@ -11,18 +11,33 @@ namespace Complete
         public AudioClip m_EngineIdling;            // Audio to play when the tank isn't moving.
         public AudioClip m_EngineDriving;           // Audio to play when the tank is moving.
 		public float m_PitchRange = 0.2f;           // The amount by which the pitch of the engine noises can vary.
+        public float m_TurretTurnSpeed = 180f;            //砲台の回転速度
+        public GameObject  m_Turret;              //砲台への参照
 
         private string m_MovementAxisName;          // The name of the input axis for moving forward and back.
         private string m_TurnAxisName;              // The name of the input axis for turning.
         private Rigidbody m_Rigidbody;              // Reference used to move the tank.
+        private float m_TurnInputValue;             
         private float m_MovementInputValue;         // The current value of the movement input.
-        private float m_TurnInputValue;             // The current value of the turn input.
+        private float m_TurnMovementInputValue;             // The current value of the turn input.
         private float m_OriginalPitch;              // The pitch of the audio source at the start of the scene.
         private ParticleSystem[] m_particleSystems; // References to all the particles systems used by the Tanks
+        private float m_TurretTurnInputValue;             //砲台の回転入力 
+        private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
+
+        private void TurretTurn (){
+            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
+            m_Turret.transform.Rotate(0f,turn,0f);//回転
+        }
 
         private void Awake ()
         {
-            m_Rigidbody = GetComponent<Rigidbody> ();
+            m_Rigidbody = GetComponent<Rigidbody>();
+            // 砲台のNullチェックを行う
+            if (m_Turret == null)
+            {
+                Debug.LogError("Turret GameObject is not assigned in the Inspector on " + gameObject.name);
+            }
         }
 
 
@@ -34,6 +49,7 @@ namespace Complete
             // Also reset the input values.
             m_MovementInputValue = 0f;
             m_TurnInputValue = 0f;
+            m_TurretTurnInputValue = 0f;
 
             // We grab all the Particle systems child of that Tank to be able to Stop/Play them on Deactivate/Activate
             // It is needed because we move the Tank when spawning it, and if the Particle System is playing while we do that
@@ -64,17 +80,17 @@ namespace Complete
             // The axes names are based on player number.
             m_MovementAxisName = "Vertical" + m_PlayerNumber;
             m_TurnAxisName = "Horizontal" + m_PlayerNumber;
-
+            m_TurretTurnAxisName = "TurretTurn"+m_PlayerNumber  ;
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
         }
-
 
         private void Update ()
         {
             // Store the value of both input axes.
             m_MovementInputValue = Input.GetAxis (m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis (m_TurnAxisName);
+            m_TurretTurnInputValue = Input.GetAxis (m_TurretTurnAxisName);
 
             EngineAudio ();
         }
@@ -113,6 +129,7 @@ namespace Complete
             // Adjust the rigidbodies position and orientation in FixedUpdate.
             Move ();
             Turn ();
+            TurretTurn();
         }
 
 
