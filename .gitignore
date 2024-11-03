@@ -5,6 +5,7 @@
 *.vsconfig
 ## UpgradeLog.htm: 多分…要らない
 /UpgradeLog.htm
+/[Pp]roject[Ss]ettings.asset
 
 # Unity
 ## https://github.com/github/gitignore/blob/main/Unity.gitignore

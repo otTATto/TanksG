@@ -36,100 +36,107 @@ namespace Complete
         {
             // Find the average position of the targets.
             //FindAveragePosition ();
-            transform.rotation=m_Targets[0].rotation; // ターゲットの回転をそのまま適用
-            //transform.position = m_Targets[0].position+new Vector3(0,2,-14);//+ new Vector3(0, 2, -15);
-            transform.position = m_Targets[0].TransformPoint(new Vector3(0, 2, -5));
+            if (m_Targets.Length > 0) // 配列に要素が存在するか確認
+            {
+                transform.rotation = m_Targets[0].rotation;
+                transform.position = m_Targets[0].TransformPoint(new Vector3(0, 2, -5));
+            }
+            else
+            {
+                Debug.LogWarning("m_Targets array is empty.");
+            }
+
 
             // Smoothly transition to that position.
             //transform.position = Vector3.SmoothDamp(transform.position, m_DesiredPosition, ref m_MoveVelocity, m_DampTime);
         }
 
-/*
-        private void FindAveragePosition ()
-        {
-            Vector3 averagePos = new Vector3 ();
-            int numTargets = 0;
+        /*
+                private void FindAveragePosition ()
+                {
+                    Vector3 averagePos = new Vector3 ();
+                    int numTargets = 0;
 
-            // Go through all the targets and add their positions together.
-            for (int i = 0; i < m_Targets.Length; i++)
-            {
-                // If the target isn't active, go on to the next one.
-                if (!m_Targets[i].gameObject.activeSelf)
-                    continue;
+                    // Go through all the targets and add their positions together.
+                    for (int i = 0; i < m_Targets.Length; i++)
+                    {
+                        // If the target isn't active, go on to the next one.
+                        if (!m_Targets[i].gameObject.activeSelf)
+                            continue;
 
-                // Add to the average and increment the number of targets in the average.
-                averagePos += m_Targets[i].position;
-                numTargets++;
-            }
+                        // Add to the average and increment the number of targets in the average.
+                        averagePos += m_Targets[i].position;
+                        numTargets++;
+                    }
 
-            // If there are targets divide the sum of the positions by the number of them to find the average.
-            if (numTargets > 0)
-                averagePos /= numTargets;
+                    // If there are targets divide the sum of the positions by the number of them to find the average.
+                    if (numTargets > 0)
+                        averagePos /= numTargets;
 
-            // Keep the same y value.
-            averagePos.y = transform.position.y;
+                    // Keep the same y value.
+                    averagePos.y = transform.position.y;
 
-            // The desired position is the average position;
-            m_DesiredPosition = averagePos;
-        }
-
-
-        private void Zoom ()
-        {
-            // Find the required size based on the desired position and smoothly transition to that size.
-            float requiredSize = FindRequiredSize();
-            m_Camera.orthographicSize = Mathf.SmoothDamp (m_Camera.orthographicSize, requiredSize, ref m_ZoomSpeed, m_DampTime);
-        }
+                    // The desired position is the average position;
+                    m_DesiredPosition = averagePos;
+                }
 
 
-        private float FindRequiredSize ()
-        {
-            // Find the position the camera rig is moving towards in its local space.
-            Vector3 desiredLocalPos = transform.InverseTransformPoint(m_DesiredPosition);
+                private void Zoom ()
+                {
+                    // Find the required size based on the desired position and smoothly transition to that size.
+                    float requiredSize = FindRequiredSize();
+                    m_Camera.orthographicSize = Mathf.SmoothDamp (m_Camera.orthographicSize, requiredSize, ref m_ZoomSpeed, m_DampTime);
+                }
 
-            // Start the camera's size calculation at zero.
-            float size = 0f;
 
-            // Go through all the targets...
-            for (int i = 0; i < m_Targets.Length; i++)
-            {
-                // ... and if they aren't active continue on to the next target.
-                if (!m_Targets[i].gameObject.activeSelf)
-                    continue;
+                private float FindRequiredSize ()
+                {
+                    // Find the position the camera rig is moving towards in its local space.
+                    Vector3 desiredLocalPos = transform.InverseTransformPoint(m_DesiredPosition);
 
-                // Otherwise, find the position of the target in the camera's local space.
-                Vector3 targetLocalPos = transform.InverseTransformPoint(m_Targets[i].position);
+                    // Start the camera's size calculation at zero.
+                    float size = 0f;
 
-                // Find the position of the target from the desired position of the camera's local space.
-                Vector3 desiredPosToTarget = targetLocalPos - desiredLocalPos;
+                    // Go through all the targets...
+                    for (int i = 0; i < m_Targets.Length; i++)
+                    {
+                        // ... and if they aren't active continue on to the next target.
+                        if (!m_Targets[i].gameObject.activeSelf)
+                            continue;
 
-                // Choose the largest out of the current size and the distance of the tank 'up' or 'down' from the camera.
-                size = Mathf.Max(size, Mathf.Abs(desiredPosToTarget.y));
+                        // Otherwise, find the position of the target in the camera's local space.
+                        Vector3 targetLocalPos = transform.InverseTransformPoint(m_Targets[i].position);
 
-                // Choose the largest out of the current size and the calculated size based on the tank being to the left or right of the camera.
-                size = Mathf.Max(size, Mathf.Abs(desiredPosToTarget.x) / m_Camera.aspect);
-            }
+                        // Find the position of the target from the desired position of the camera's local space.
+                        Vector3 desiredPosToTarget = targetLocalPos - desiredLocalPos;
 
-            // Add the edge buffer to the size.
-            size += m_ScreenEdgeBuffer;
+                        // Choose the largest out of the current size and the distance of the tank 'up' or 'down' from the camera.
+                        size = Mathf.Max(size, Mathf.Abs(desiredPosToTarget.y));
 
-            // Make sure the camera's size isn't below the minimum.
-            size = Mathf.Max (size, m_MinSize);
+                        // Choose the largest out of the current size and the calculated size based on the tank being to the left or right of the camera.
+                        size = Mathf.Max(size, Mathf.Abs(desiredPosToTarget.x) / m_Camera.aspect);
+                    }
 
-            return size;
-        }
+                    // Add the edge buffer to the size.
+                    size += m_ScreenEdgeBuffer;
 
-        public void SetStartPositionAndSize ()
-        {
-            // Find the desired position.
-            //FindAveragePosition ();
+                    // Make sure the camera's size isn't below the minimum.
+                    size = Mathf.Max (size, m_MinSize);
 
-            // Set the camera's position to the desired position without damping.
-            transform.position = m_DesiredPosition;
+                    return size;
+                }
 
-            // Find and set the required size of the camera.
-            m_Camera.orthographicSize = FindRequiredSize ();
-        }
-*/
+                public void SetStartPositionAndSize ()
+                {
+                    // Find the desired position.
+                    //FindAveragePosition ();
+
+                    // Set the camera's position to the desired position without damping.
+                    transform.position = m_DesiredPosition;
+
+                    // Find and set the required size of the camera.
+                    m_Camera.orthographicSize = FindRequiredSize ();
+                }
+        */
     }
 }
