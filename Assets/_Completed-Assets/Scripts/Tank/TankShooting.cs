@@ -19,19 +19,19 @@ namespace Complete
         public int m_RemainingShells = 10;          // 残弾数
         public int m_ShellCapacity = 50;            // 砲弾の最大数
 
-        public GameObject m_MinePrefab;                // 地雷のプレハブ
-        public int m_RemainingMines = 1;              // 持っている地雷の数
-        public int m_MineCapacity = 3;                // 地雷の最大数
-        public float m_MineSetupTime = 1.5f;          // 地雷設置に要する時間
+        public GameObject m_MinePrefab;             // 地雷のプレハブ
+        public int m_RemainingMines = 0;            // 持っている地雷の数
+        public int m_MineCapacity = 3;              // 地雷の最大数
+        public float m_MineSetupTime = 1.5f;        // 地雷設置に要する時間
 
         private string m_FireButton;                // 発射ボタン
         private float m_CurrentLaunchForce;         // The force that will be given to the shell when the fire button is released.
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
 
-        private string m_MineButton;                   // 地雷設置ボタン
-        private bool m_IsSettingMine = false;         // 地雷設置中かどうか
-        private float m_MineSetupTimer = 0f;          // 地雷設置タイマー
+        private string m_MineButton;                // 地雷設置ボタン
+        private bool m_IsSettingMine = false;       // 地雷設置中かどうか
+        private float m_MineSetupTimer = 0f;        // 地雷設置タイマー
 
         private void OnEnable()
         {
@@ -55,8 +55,21 @@ namespace Complete
 
         private void Update ()
         {
+            // 地雷設置中は射撃できないようにする
+            if (!m_IsSettingMine)
+            {
+                HandleShooting();
+            }
+
+            HandleMineSetup();
+        }
+
+        // 射撃処理を別メソッドに分離
+        private void HandleShooting()
+        {
             // 砲弾がなくなったら発射できない
-            if (m_RemainingShells <= 0) {
+            if (m_RemainingShells <= 0)
+            {
                 return;
             }
 
@@ -97,13 +110,14 @@ namespace Complete
             {
                 // ... launch the shell.
                 Fire ();
-                m_RemainingShells--;
             }
+        }
 
-            #region 地雷設置の処理
+        // 地雷設置処理を別メソッドに分離
+        private void HandleMineSetup()
+        {
             if (m_RemainingMines > 0 && Input.GetButtonDown(m_MineButton) && !m_IsSettingMine)
             {
-                Debug.Log("地雷設置");
                 StartSettingMine();
             }
 
@@ -116,13 +130,12 @@ namespace Complete
                     CompleteMineSetup();
                 }
             }
-            #endregion
         }
-
 
         private void Fire ()
         {
             // Set the fired flag so only Fire is only called once.
+            m_RemainingShells--;
             m_Fired = true;
 
             // Create an instance of the shell and store a reference to it's rigidbody.
@@ -130,7 +143,7 @@ namespace Complete
                 Instantiate (m_Shell, m_FireTransform.position, m_FireTransform.rotation) as Rigidbody;
 
             // Set the shell's velocity to the launch force in the fire position's forward direction.
-            shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward; 
+            shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward;
 
             // Change the clip to the firing clip and play it.
             m_ShootingAudio.clip = m_FireClip;
@@ -144,10 +157,10 @@ namespace Complete
         {
             m_IsSettingMine = true;
             m_MineSetupTimer = 0f;
+            m_RemainingMines--;
 
-            // タンクの移動と射撃を無効化
+            // タンクの移動のみを無効化
             GetComponent<TankMovement>().enabled = false;
-            enabled = false;
         }
 
         private void CompleteMineSetup()
@@ -160,12 +173,10 @@ namespace Complete
             );
             
             Instantiate(m_MinePrefab, minePosition, Quaternion.identity);
-            m_RemainingMines--;
 
             // タンクの移動と射撃を再度有効化
             m_IsSettingMine = false;
             GetComponent<TankMovement>().enabled = true;
-            enabled = true;
         }
     }
 }

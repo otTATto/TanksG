@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace Complete
 {
@@ -7,9 +8,25 @@ namespace Complete
         public LayerMask m_TankMask;
         public ParticleSystem m_ExplosionParticles;
         public AudioSource m_ExplosionAudio;
-        public float m_MaxDamage = 100f;
+        public float m_MaxDamage = 80f;
         public float m_ExplosionForce = 1000f;
-        public float m_ExplosionRadius = 5f;
+        public float m_ExplosionRadius = 10f;
+        public float m_ActivationDelay = 1f; // Delay before the mine becomes active
+
+        private Collider m_Collider;
+
+        private void Start()
+        {
+            m_Collider = GetComponent<Collider>();
+            m_Collider.enabled = false; // Disable the collider initially
+            StartCoroutine(ActivateMine());
+        }
+
+        private IEnumerator ActivateMine()
+        {
+            yield return new WaitForSeconds(m_ActivationDelay);
+            m_Collider.enabled = true; // Enable the collider after the delay
+        }
 
         private void OnTriggerEnter(Collider other)
         {
@@ -55,9 +72,11 @@ namespace Complete
         {
             Vector3 explosionToTarget = targetPosition - transform.position;
             float explosionDistance = explosionToTarget.magnitude;
-            float relativeDistance = (m_ExplosionRadius - explosionDistance) / m_ExplosionRadius;
-            float damage = relativeDistance * m_MaxDamage;
-            return Mathf.Max(0f, damage);
+            if (explosionDistance > m_ExplosionRadius) return 0;
+
+            float relativeDistance = explosionDistance / m_ExplosionRadius; // [0,1]に収める
+            float damage = m_MaxDamage * Mathf.Exp(-relativeDistance);
+            return damage;
         }
     }
 } 
