@@ -21,6 +21,7 @@ namespace Complete
         private float m_CurrentLaunchForce;         // The force that will be given to the shell when the fire button is released.
         private float m_ChargeSpeed;                // How fast the launch force increases, based on the max charge time.
         private bool m_Fired;                       // Whether or not the shell has been launched with this button press.
+        private TankWarp tankWarp; //TankWarpのインスタンス
 
 
         private void OnEnable()
@@ -35,6 +36,7 @@ namespace Complete
         {
             // The fire axis is based on the player number.
             m_FireButton = "Fire" + m_PlayerNumber;
+            tankWarp = GetComponent<TankWarp>();
 
             // The rate that the launch force charges up is the range of possible forces by the max charge time.
             m_ChargeSpeed = (m_MaxLaunchForce - m_MinLaunchForce) / m_MaxChargeTime;
@@ -45,7 +47,7 @@ namespace Complete
         {
             // The slider should have a default value of the minimum launch force.
             m_AimSlider.value = m_MinLaunchForce;
-
+            if (tankWarp.canWarp) { 
             // If the max force has been exceeded and the shell hasn't yet been launched...
             if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
             {
@@ -77,6 +79,7 @@ namespace Complete
             {
                 // ... launch the shell.
                 Fire ();
+            }
             }
         }
 
