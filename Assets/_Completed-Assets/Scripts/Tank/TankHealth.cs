@@ -31,6 +31,12 @@ namespace Complete
             m_ExplosionParticles.gameObject.SetActive (false);
         }
 
+        public float GetHealth()
+        {
+            return (m_CurrentHealth);
+        }
+
+
 
         private void OnEnable()
         {
