@@ -46,7 +46,7 @@ namespace Complete
                 }
             }
 
-            tankShooting = GameObject.FindWithTag("Player").GetComponent<TankShooting>();
+            tankShooting = manager.m_Tanks[0].m_Instance.GetComponent<TankShooting>();
 
             // 10の位のアイコンを取得
             for (int i = 1; i <= tensMax; i++)
