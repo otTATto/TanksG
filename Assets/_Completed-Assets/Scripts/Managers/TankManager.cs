@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 
 namespace Complete
@@ -78,6 +78,18 @@ namespace Complete
 
             m_Instance.SetActive (false);
             m_Instance.SetActive (true);
+        }
+
+        // 残弾数を設定
+        public void SetRemainingShells(int remainingShells)
+        {
+            m_Shooting.m_RemainingShells = remainingShells;
+        }
+
+        // 持っている地雷の数を設定
+        public void SetRemainingMines(int remainingMines)
+        {
+            m_Shooting.m_RemainingMines = remainingMines;
         }
     }
 }

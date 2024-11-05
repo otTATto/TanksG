@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using UnityEngine.UI;
 
 namespace Complete
@@ -30,6 +30,12 @@ namespace Complete
             // Disable the prefab so it can be activated when it's required.
             m_ExplosionParticles.gameObject.SetActive (false);
         }
+
+        public float GetHealth()
+        {
+            return (m_CurrentHealth);
+        }
+
 
 
         private void OnEnable()
