@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using System;
 
 namespace Complete
 {
@@ -11,6 +12,7 @@ namespace Complete
         public float m_StartDelay = 3f;             // The delay between the start of RoundStarting and RoundPlaying phases.
         public float m_EndDelay = 3f;               // The delay between the end of RoundPlaying and RoundEnding phases.
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
+        public MiniMapCameraControl m_MiniMapCameraControl;       // Reference to the MiniMapCameraControl script for control during different phases.
         public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
@@ -31,6 +33,8 @@ namespace Complete
 
             SpawnAllTanks();
             SetCameraTargets();
+
+            Debug.Log("GameManager has been started.");
 
             // Once the tanks have been created and the camera is using them as targets, start the game.
             StartCoroutine (GameLoop ());
@@ -66,6 +70,8 @@ namespace Complete
             */
             // These are the targets the camera should follow.
             m_CameraControl.m_Targets = targets;
+            // ミニマップ用のカメラにもターゲットを設定
+            m_MiniMapCameraControl.m_Targets = targets;
         }
 
 

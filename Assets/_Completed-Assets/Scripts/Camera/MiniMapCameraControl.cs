@@ -1,0 +1,39 @@
+using UnityEngine;
+
+namespace Complete
+{
+    public class MiniMapCameraControl : MonoBehaviour
+    {
+        public float m_DampTime = 0.2f;
+        public float m_ScreenEdgeBuffer = 4f;
+        public float m_MinSize = 6.5f;  
+        [HideInInspector] public Transform[] m_Targets;
+        private Camera m_Camera;
+
+        private void Awake ()
+        {
+            m_Camera = GetComponentInChildren<Camera> ();
+        }
+
+        private void FixedUpdate ()
+        {
+            Move ();
+        }
+
+        private void Move ()
+        {
+            // カメラの追跡対象が存在する場合
+            if (m_Targets.Length > 0)
+            {
+                // カメラの位置を設定
+                transform.position = m_Targets[0].position;
+                // カメラの向きを設定
+                transform.rotation = m_Targets[0].rotation;
+            }
+            else
+            {
+                Debug.LogWarning("m_Targets array is empty.");
+            }
+        }
+    }
+}
