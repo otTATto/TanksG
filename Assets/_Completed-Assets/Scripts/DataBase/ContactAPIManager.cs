@@ -9,6 +9,7 @@ public class ContactAPIManager : MonoBehaviour
 {
     public string apiUrl = "http://127.0.0.1:8000/api/contact"; // Laravel APIのURL
     public GameObject contactItemPrefab; // 問い合わせ表示用のPrefab
+    public GameObject ReplyPrefab; // 問い合わせ表示用のPrefab
     public Transform contentPanel; // Scroll ViewのContentに対応するTransform
     public GameObject detail; // 問い合わせ表示用のPrefab
     public Transform content; // Scroll ViewのContentに対応するTransform
@@ -73,6 +74,7 @@ public class ContactAPIManager : MonoBehaviour
             detailContact.SendButton1 = Send_Button;
             detailContact.messageField = messageField;
             detailContact.CloseButton = CloseButton;
+            detailContact.ReplyPrefab= ReplyPrefab;
         }
         else
         {

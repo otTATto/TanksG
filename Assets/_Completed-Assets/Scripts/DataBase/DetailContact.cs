@@ -50,7 +50,7 @@ public class DetailContact : MonoBehaviour
         {
             button.onClick.AddListener(() =>
             {
-                isButtonPressed=true;
+                isButtonPressed = true;
                 Debug.Log($"Opening details for Contact ID: {Contact_id}");
                 detailPanel.SetActive(true);
                 OnContactItemClicked();
@@ -62,7 +62,8 @@ public class DetailContact : MonoBehaviour
         {
             SendButton1.onClick.AddListener(() =>
             {
-                if(isButtonPressed){
+                if (isButtonPressed)
+                {
                     Debug.Log($"SendButton clicked for Contact ID: {Contact_id}");
                     SendContactRequest();
                 }
@@ -74,7 +75,7 @@ public class DetailContact : MonoBehaviour
         }
         CloseButton.onClick.AddListener(() =>
         {
-            isButtonPressed=false;
+            isButtonPressed = false;
             // Content内のすべての子オブジェクトを削除
             foreach (Transform child in Content_detail)
             {
@@ -142,6 +143,8 @@ public class DetailContact : MonoBehaviour
                 Contact contact = JsonUtility.FromJson<Contact>(jsonResponse);
 
                 Debug.Log($"Contact ID: {contact.id}, Title: {contact.title}, Content: {contact.content}");
+                // まずContactのcontentを表示
+                DisplayContactContent(contact.content);
 
                 foreach (Reply reply in contact.replies)
                 {
@@ -162,18 +165,65 @@ public class DetailContact : MonoBehaviour
         // Prefabから問い合わせアイテムを生成
         GameObject contactItem = Instantiate(ReplyPrefab, Content_detail);
 
-        // TextMeshProUGUIコンポーネントを取得して内容を設定
-        TextMeshProUGUI textComponent = contactItem.GetComponent<TextMeshProUGUI>();
+        // Who用のTextMeshProUGUIを取得
+        TextMeshProUGUI whoText = contactItem.transform.Find("Who").GetComponent<TextMeshProUGUI>();
 
-        if (textComponent != null)
+        if (whoText != null)
         {
-            textComponent.text = reply.message; // メッセージを設定
-            Debug.Log($"Created reply item: {reply.message}");
+            whoText.text = (reply.user_id == 0) ? "you" : "operator"; // Whoを設定
+            Debug.Log($"Who set to: {whoText.text}");
         }
         else
         {
-            Debug.LogError("TextMeshProUGUI component is missing in the ReplyPrefab.");
+            Debug.LogError("TextMeshProUGUI component for 'Who' is missing in the ReplyPrefab.");
+        }
+
+        // Reply用のTextMeshProUGUIを取得
+        TextMeshProUGUI replyText = contactItem.transform.Find("Reply").GetComponent<TextMeshProUGUI>();
+
+        if (replyText != null)
+        {
+            replyText.text = reply.message; // Replyを設定
+            Debug.Log($"Reply set to: {reply.message}");
+        }
+        else
+        {
+            Debug.LogError("TextMeshProUGUI component for 'Reply' is missing in the ReplyPrefab.");
         }
     }
+
+    private void DisplayContactContent(string content)
+    {
+        // Prefabから問い合わせコンテンツアイテムを生成
+        GameObject contactContentItem = Instantiate(ReplyPrefab, Content_detail);
+
+        // Who用のTextMeshProUGUIを取得
+        TextMeshProUGUI whoText = contactContentItem.transform.Find("Who").GetComponent<TextMeshProUGUI>();
+
+        if (whoText != null)
+        {
+            whoText.text = "you"; // Whoを"you"に設定
+            Debug.Log($"Who set to: {whoText.text}");
+        }
+        else
+        {
+            Debug.LogError("TextMeshProUGUI component for 'Who' is missing in the ReplyPrefab.");
+        }
+
+        // Reply用のTextMeshProUGUIを取得
+        TextMeshProUGUI replyText = contactContentItem.transform.Find("Reply").GetComponent<TextMeshProUGUI>();
+
+        if (replyText != null)
+        {
+            replyText.text = content; // Replyにcontentを設定
+            Debug.Log($"Displayed contact content: {content}");
+        }
+        else
+        {
+            Debug.LogError("TextMeshProUGUI component for 'Reply' is missing in the ReplyPrefab.");
+        }
+    }
+
+
 }
 
