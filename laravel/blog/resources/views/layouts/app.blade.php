@@ -19,6 +19,8 @@
                 
                 @if (Auth::user()->is_admin) <!-- 管理者のみ表示 -->
                 <li><a class="tab-item{{ Request::is('admin/game-users') ? ' active' : ''}}" href="{{ route('admin.game_users.index') }}">ゲームユーザー管理</a></li> <!-- 追加 -->
+                <li><a class="tab-item{{ Request::is('admin/gift-logs') ? ' active' : ''}}" href="{{ route('admin.gift_logs.index') }}">プレゼント配布履歴</a></li>
+
                 @endif
                 
                 <li>
