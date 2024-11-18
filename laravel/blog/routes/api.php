@@ -3,6 +3,8 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MyDataController;
+use App\Http\Controllers\Api\ContactController;
+use App\Http\Controllers\Api\GameUserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,10 +22,10 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/blog', [MyDataController::class, 'getInfo']);
-use App\Http\Controllers\Api\ContactController;
-
 Route::apiResource('contact', ContactController::class);
-
 
 // 返信を追加するエンドポイント
 Route::post('contact/{contact_id}/replies', [ContactController::class, 'addReply']);
+
+// ゲームユーザーのアカウント停止状態を確認するAPI
+Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'checkSuspended']);

@@ -16,6 +16,11 @@
                 <li><a class="tab-item{{ Request::is('home') ? ' active' : ''}}" href="{{ route('home') }}">マイページ</a></li>
                 <li><a class="tab-item{{ Request::is('articles') ? ' active' : ''}}" href="{{ route('articles.index') }}">お知らせ</a></li>
                 <li><a class="tab-item{{ Request::is('contact') ? ' active' : ''}}" href="{{ route('contact.index') }}">お問い合わせ</a></li> <!-- 追加 -->
+                
+                @if (Auth::user()->is_admin) <!-- 管理者のみ表示 -->
+                <li><a class="tab-item{{ Request::is('admin/game-users') ? ' active' : ''}}" href="{{ route('admin.game_users.index') }}">ゲームユーザー管理</a></li> <!-- 追加 -->
+                @endif
+                
                 <li>
                     <form on-submit="return confirm('ログアウトしますか？')" action="{{ route('logout') }}" method="post">
                         @csrf
