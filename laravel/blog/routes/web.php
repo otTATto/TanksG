@@ -42,4 +42,10 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // プレゼント配布履歴
     Route::get('/gift-logs', [GiftLogController::class, 'index'])->name('gift_logs.index');
+    // 管理者用ルート（管理者のみアクセス可能）
+    // プレゼント配布画面
+    Route::get('gift-distribution', [GiftLogController::class, 'create'])->name('gift_distribution.create');
+
+    // プレゼント配布処理（POST）
+    Route::post('gift-distribution', [GiftLogController::class, 'store'])->name('gift_distribution.store');
 });

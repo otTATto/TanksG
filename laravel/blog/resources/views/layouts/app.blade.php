@@ -15,16 +15,16 @@
                 @if (Auth::check())
                 <li><a class="tab-item{{ Request::is('home') ? ' active' : ''}}" href="{{ route('home') }}">マイページ</a></li>
                 <li><a class="tab-item{{ Request::is('articles') ? ' active' : ''}}" href="{{ route('articles.index') }}">お知らせ</a></li>
-                <li><a class="tab-item{{ Request::is('contact') ? ' active' : ''}}" href="{{ route('contact.index') }}">お問い合わせ</a></li> <!-- 追加 -->
+                <li><a class="tab-item{{ Request::is('contact') ? ' active' : ''}}" href="{{ route('contact.index') }}">お問い合わせ</a></li>
                 
                 @if (Auth::user()->is_admin) <!-- 管理者のみ表示 -->
-                <li><a class="tab-item{{ Request::is('admin/game-users') ? ' active' : ''}}" href="{{ route('admin.game_users.index') }}">ゲームユーザー管理</a></li> <!-- 追加 -->
+                <li><a class="tab-item{{ Request::is('admin/game-users') ? ' active' : ''}}" href="{{ route('admin.game_users.index') }}">ゲームユーザー管理</a></li>
                 <li><a class="tab-item{{ Request::is('admin/gift-logs') ? ' active' : ''}}" href="{{ route('admin.gift_logs.index') }}">プレゼント配布履歴</a></li>
-
+                <li><a class="tab-item{{ Request::is('admin/gift-distribution') ? ' active' : ''}}" href="{{ route('admin.gift_distribution.create') }}">プレゼント配布</a></li>
                 @endif
                 
                 <li>
-                    <form on-submit="return confirm('ログアウトしますか？')" action="{{ route('logout') }}" method="post">
+                    <form onsubmit="return confirm('ログアウトしますか？')" action="{{ route('logout') }}" method="post">
                         @csrf
                         <button type="submit">ログアウト</button>
                     </form>

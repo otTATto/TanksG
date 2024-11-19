@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateGameUserTable extends Migration
+class CreateGameUsersTable extends Migration // クラス名も変更
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreateGameUserTable extends Migration
      */
     public function up()
     {
-        Schema::create('game_user', function (Blueprint $table) {
-            $table->id();//ユーザーid
+        Schema::create('game_users', function (Blueprint $table) { // テーブル名を複数形に変更
+            $table->id(); // ユーザーID
             $table->string('name'); // ユーザー名
             $table->boolean('is_suspended')->default(false); // アカウント停止情報
             $table->timestamps(); // 作成日時・更新日時
@@ -28,6 +28,6 @@ class CreateGameUserTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('game_user');
+        Schema::dropIfExists('game_users'); // 同じく複数形に変更
     }
 }

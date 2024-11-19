@@ -18,7 +18,7 @@ class CreateGiftLogsTable extends Migration
             $table->unsignedBigInteger('user_id')->nullable(); // 配布対象ユーザーID
             $table->unsignedBigInteger('item_id'); // 配布アイテムID
             $table->integer('quantity'); // 配布アイテムの数量
-            $table->boolean('is_global'); // 全体配布フラグ
+            $table->boolean('is_global')->default(false); // 全体配布フラグ
             $table->timestamps(); // 作成日時と更新日時
         });
     }
