@@ -32,69 +32,59 @@ class GiftLogController extends Controller
 
     // プレゼント配布の処理
     public function store(Request $request)
-    {
-        // バリデーション
-        try {
-            $validated = $request->validate([
-                'item_id' => 'required|exists:items,id',
-                'quantity' => 'required|integer|min:1',
-                'user_id' => 'nullable|exists:game_users,id',
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // バリデーションエラーの詳細をログに記録
-            \Log::error('バリデーションエラー:', $e->errors());
-            return redirect()->back()->withErrors($e->errors());
-        }
+{
+    // バリデーション
+    try {
+        $validated = $request->validate([
+            'item_id' => 'required|exists:items,id',
+            'quantity' => 'required|integer|min:1',
+            'user_id' => 'nullable|exists:game_users,id',
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        \Log::error('バリデーションエラー:', $e->errors());
+        return redirect()->back()->withErrors($e->errors());
+    }
 
-        // バリデーション成功時にログを出力
-        \Log::info('バリデーション成功', ['item_id' => $request->item_id, 'quantity' => $request->quantity, 'is_global' => $request->is_global]);
+    // 配布処理のフラグ
+    $isGlobal = $request->has('is_global') && $request->is_global;
 
-        // 配布処理のフラグ
-        $isGlobal = $request->has('is_global') && $request->is_global;
+    // ユーザーの取得
+    $users = $isGlobal
+        ? GameUser::all() // 全体配布の場合は全ユーザー
+        : GameUser::where('id', $request->user_id)->get();
 
-        // ユーザーの取得（全体配布の場合は全ユーザー）
+    if ($users->isEmpty()) {
+        return redirect()->back()->withErrors(['error' => '配布対象のユーザーが存在しません。']);
+    }
+
+    // 配布処理
+    try {
+        // 全体配布の場合は1回だけ GiftLog を作成
         if ($isGlobal) {
-            $users = GameUser::all();
-
-            if ($users->isEmpty()) {
-                return redirect()->back()->withErrors(['error' => '配布対象のユーザーが存在しません。']);
-            }
+            GiftLog::create([
+                'user_id' => null,  // 全体配布は user_id を NULL に設定
+                'item_id' => $request->item_id,
+                'quantity' => $request->quantity,
+                'is_global' => $isGlobal,
+            ]);
         } else {
-            // 特定のユーザーへ配布
-            $users = GameUser::where('id', $request->user_id)->get();
-
-            if ($users->isEmpty()) {
-                return redirect()->back()->withErrors(['error' => '指定されたユーザーが見つかりません。']);
-            }
-        }
-
-        // 配布処理開始
-        try {
-            \Log::info('プレゼント配布処理が開始されました。', ['is_global' => $isGlobal, 'user_count' => count($users)]);
-           if($isGlobal) {
-                GiftLog::create([
-                    'user_id' => $isGlobal ? null : $user->id, // 全体配布の場合は user_id を NULL
-                    'item_id' => $request->item_id,
-                    'quantity' => $request->quantity,
-                    'is_global' => $isGlobal, // 全体配布フラグ
-                ]);
-           }else{
+            // 特定ユーザー配布の場合は各ユーザーごとに GiftLog を作成
             foreach ($users as $user) {
                 GiftLog::create([
-                    'user_id' => $isGlobal ? null : $user->id, // 全体配布の場合は user_id を NULL
+                    'user_id' => $user->id,
                     'item_id' => $request->item_id,
                     'quantity' => $request->quantity,
-                    'is_global' => $isGlobal, // 全体配布フラグ
+                    'is_global' => $isGlobal,
                 ]);
-           }
             }
-
-            \Log::info('プレゼント配布が完了しました。');
-            return redirect()->route('admin.gift_distribution.create')->with('success', 'プレゼントの配布が完了しました');
-        } catch (\Exception $e) {
-            // エラーログに詳細を記録
-            \Log::error('プレゼント配布処理中にエラーが発生しました: ' . $e->getMessage());
-            return redirect()->back()->withErrors(['error' => '配布処理中にエラーが発生しました。']);
         }
+
+        \Log::info('プレゼント配布が完了しました。');
+        return redirect()->route('admin.gift_distribution.create')->with('success', 'プレゼントの配布が完了しました');
+    } catch (\Exception $e) {
+        \Log::error('プレゼント配布処理中にエラーが発生しました: ' . $e->getMessage());
+        return redirect()->back()->withErrors(['error' => '配布処理中にエラーが発生しました。']);
     }
+}
+
 }

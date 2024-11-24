@@ -10,4 +10,9 @@ class GameUser extends Model
     use HasFactory;
     protected $table = 'game_users'; // テーブル名の指定
     protected $fillable = ['name', 'is_suspended']; // 許可するカラム
+    public function items()
+{
+    return $this->hasMany(UserItem::class, 'user_id');
+}
+
 }

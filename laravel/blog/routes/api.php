@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\MyDataController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\GameUserController;
+use App\Http\Controllers\Api\GiftController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -29,3 +31,6 @@ Route::post('contact/{contact_id}/replies', [ContactController::class, 'addReply
 
 // ゲームユーザーのアカウント停止状態を確認するAPI
 Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'checkSuspended']);
+Route::post('/grant-item', [GiftController::class, 'grantItem']);
+Route::get('/presents/{user_id}', [GiftController::class, 'getUserPresents']); // プレゼント一覧
+Route::post('/presents/received/{user_id}/{present_id}', [GiftController::class, 'receivePresentById']);

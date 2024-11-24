@@ -14,4 +14,9 @@ class Item extends Model
     {
         return $this->hasMany(GiftLog::class);
     }
+    public function users()
+{
+    return $this->hasMany(UserItem::class, 'item_id');
+}
+
 }
