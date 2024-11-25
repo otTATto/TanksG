@@ -15,8 +15,7 @@ public class Resgister : MonoBehaviour
 
     void Start()
     {
-        GameObject existingObject = GameObject.FindWithTag("DontDistoryObject");
-        iDDisplayer = existingObject.GetComponent<IDDisplayer>();
+        iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
     }
 
     public void OnclickStart() 
@@ -68,7 +67,7 @@ public class Resgister : MonoBehaviour
                     if (int.TryParse(id, out int playerId))
                     {
                         iDDisplayer.SetPlayerIDandName(playerId, "NONAME");
-                        //SceneManager.LoadScene(SceneNames.HomeScene);
+                        SceneManager.LoadScene(SceneNames.HomeScene);
                     }
                     else
                     {

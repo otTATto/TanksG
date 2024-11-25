@@ -8,7 +8,7 @@ namespace Complete
 {
     public class GameManager : MonoBehaviour
     {
-        public int m_NumRoundsToWin = 5;            // The number of rounds a single player has to win to win the game.
+        public int m_NumRoundsToWin = 1;            // The number of rounds a single player has to win to win the game.
         public float m_StartDelay = 3f;             // The delay between the start of RoundStarting and RoundPlaying phases.
         public float m_EndDelay = 3f;               // The delay between the end of RoundPlaying and RoundEnding phases.
         public CameraControl m_CameraControl;       // Reference to the CameraControl script for control during different phases.
@@ -16,6 +16,8 @@ namespace Complete
         public Text m_MessageText;                  // Reference to the overlay Text to display winning text, etc.
         public GameObject m_TankPrefab;             // Reference to the prefab the players will control.
         public TankManager[] m_Tanks;               // A collection of managers for enabling and disabling different aspects of the tanks.
+        public GameObject m_RankingPanel;
+
 
         
         private int m_RoundNumber;                  // Which round the game is currently on.
@@ -23,6 +25,9 @@ namespace Complete
         private WaitForSeconds m_EndWait;           // Used to have a delay whilst the round or game ends.
         private TankManager m_RoundWinner;          // Reference to the winner of the current round.  Used to make an announcement of who won.
         private TankManager m_GameWinner;           // Reference to the winner of the game.  Used to make an announcement of who won.
+        private bool m_isPlayerWin;
+        private RankingManager m_RankingManager;
+
 
 
         private void Start()
@@ -30,6 +35,7 @@ namespace Complete
             // Create the delays so they only have to be made once.
             m_StartWait = new WaitForSeconds (m_StartDelay);
             m_EndWait = new WaitForSeconds (m_EndDelay);
+            m_RankingManager = m_RankingPanel.GetComponent<RankingManager>();
 
             SpawnAllTanks();
             SetCameraTargets();
@@ -86,12 +92,20 @@ namespace Complete
 
             // Once execution has returned here, run the 'RoundEnding' coroutine, again don't return until it's finished.
             yield return StartCoroutine (RoundEnding());
+            if (m_GameWinner == m_Tanks[0])
+            {
+                m_isPlayerWin = true;
+            }
 
             // This code is not run until 'RoundEnding' has finished.  At which point, check if a game winner has been found.
             if (m_GameWinner != null)
             {
                 // If there is a game winner, restart the level.
-                SceneManager.LoadScene(SceneNames.TitleScene);
+                //SceneManager.LoadScene(SceneNames.TitleScene);
+                //ランキングにプレイヤーにisPlayerWinを与える
+                m_RankingPanel.gameObject.SetActive(true);
+                if (m_RankingManager == null) { Debug.Log("m_RankingManager nexsit"); }
+                m_RankingManager.UpdateScoreAndFetchRanking(m_isPlayerWin);
             }
             else
             {
@@ -162,6 +176,7 @@ namespace Complete
 
             // Now the winner's score has been incremented, see if someone has one the game.
             m_GameWinner = GetGameWinner ();
+            //プレイヤーが勝者であるかどうかをチェック
 
             // Get a message based on the scores and whether or not there is a game winner and display it.
             string message = EndMessage ();

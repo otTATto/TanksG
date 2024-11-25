@@ -20,8 +20,7 @@ public class UserReistration : MonoBehaviour
 
     void Start()
     {
-        GameObject existingObject = GameObject.FindWithTag("DontDistoryObject");
-        iDDisplayer = existingObject.GetComponent<IDDisplayer>();
+        iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
         playernameInput.onValueChanged.AddListener(ValidateInput);
         errorTX.text = "";
         informationTX.text = "";
