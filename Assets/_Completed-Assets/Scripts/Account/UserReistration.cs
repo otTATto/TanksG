@@ -26,15 +26,7 @@ public class UserReistration : MonoBehaviour
         informationTX.text = "";
         if (iDDisplayer != null)
         {
-            if (iDDisplayer.GetPlayerID() == 0)
-            {
-                errorTX.text = "No Player Found";
-                isPlayerExsist = false;
-            }
-            else {
                 playerID = iDDisplayer.GetPlayerID();
-                //informationTX.text =
-            }
         }
     }
     public void BacktoTitle()
@@ -97,7 +89,6 @@ public class UserReistration : MonoBehaviour
                 if (www.downloadHandler.text == "success")
                 {
                     informationTX.text = "Name change successed";
-                    iDDisplayer.GetPlayerNameData();
                 }
                 else
                 {

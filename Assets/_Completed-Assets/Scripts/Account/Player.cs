@@ -5,17 +5,18 @@ using System.Collections.Generic;
 using TMPro;
 
 [System.Serializable]
-public class Player
+public class PlayerData
 {
     public int id;
     public string playername;
     public int winrate;
     public int wincount;
     public int losecount;
+    public bool ranking;
 }
 
 [System.Serializable]
 public class PlayerListWrapper
 {
-    public List<Player> players;
+    public List<PlayerData> playerDatas;
 }

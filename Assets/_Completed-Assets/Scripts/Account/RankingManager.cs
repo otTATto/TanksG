@@ -41,8 +41,8 @@ public class RankingManager : MonoBehaviour
                 string json = www.downloadHandler.text;
                 Debug.Log("Received JSON: " + json);
                 PlayerListWrapper wrapper = JsonUtility.FromJson<PlayerListWrapper>(json);
-                List<Player> players = wrapper.players;
-                DisplayRanking(players);
+                List<PlayerData> playerDatas = wrapper.playerDatas;
+                DisplayRanking(playerDatas);
             }
             else
             {
@@ -65,8 +65,8 @@ public class RankingManager : MonoBehaviour
                 string json = www.downloadHandler.text;
                 Debug.Log("Received JSON: " + json);
                 PlayerListWrapper wrapper = JsonUtility.FromJson<PlayerListWrapper>(json);
-                List<Player> players = wrapper.players;
-                DisplayRanking(players);
+                List<PlayerData> playerDatas = wrapper.playerDatas;
+                DisplayRanking(playerDatas);
             }
             else
             {
@@ -75,9 +75,9 @@ public class RankingManager : MonoBehaviour
         }
     }
 
-    void DisplayRanking(List<Player> players)
+    void DisplayRanking(List<PlayerData> playerDatas)
     {
-        foreach (var player in players)
+        foreach (var playerData in playerDatas)
         {
             GameObject rankingInstance = Instantiate(RankingBorder, RankingPoint);
             TMP_Text tmpText = rankingInstance.GetComponentInChildren<TMP_Text>();
@@ -88,9 +88,9 @@ public class RankingManager : MonoBehaviour
             }
             else
             {
-                tmpText.text = "Ranking:" + player.id + " playername:" + player.playername +
-                               " Winrate:" + player.winrate + "%" +
-                               " Win:" + player.wincount + " lose:" + player.losecount;
+                tmpText.text = "Ranking:" + playerData.id + " playername:" + playerData.playername +
+                               " Winrate:" + playerData.winrate + "%" +
+                               " Win:" + playerData.wincount + " lose:" + playerData.losecount;
             }
         }
     }
