@@ -10,7 +10,7 @@ public class VersusPlayerButton : MonoBehaviour
     {
         versusPlayerButton = GetComponent<Button>();
         versusPlayerButton.onClick.AddListener(() => {
-            SceneManager.LoadScene(SceneNames.GameScene);
+            SceneManager.LoadScene(SceneNames.LobbyScene);
         });
     }
 }
