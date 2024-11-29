@@ -8,12 +8,11 @@ public class RankingManager : MonoBehaviour
 {
     public GameObject RankingBorder;
     public Transform RankingPoint;
-    private string updateAndGetRankingURL = "http://localhost/updateranking.php";
+    private const string BASE_URL = "127.0.0.1";
+    private const string PORT = "8000";
+    private const string API_PATH = "api/updateranking";
+    private string updateAndGetRankingURL => $"http://{BASE_URL}:{PORT}/{API_PATH}";
     private IDDisplayer iDDisplayer;
-
-
-
-
 
     public void UpdateScoreAndFetchRanking(bool isPlayerWin)
     {
@@ -27,7 +26,7 @@ public class RankingManager : MonoBehaviour
 
     IEnumerator UpdateAndFetch(int playerId, int isPlayerWin)
     {
-        Debug.Log(" UpdateAndFetch");
+        Debug.Log("UpdateAndFetch");
         WWWForm form = new WWWForm();
         form.AddField("id", playerId);
         form.AddField("ifplayerwin", isPlayerWin);
@@ -40,13 +39,30 @@ public class RankingManager : MonoBehaviour
             {
                 string json = www.downloadHandler.text;
                 Debug.Log("Received JSON: " + json);
-                PlayerListWrapper wrapper = JsonUtility.FromJson<PlayerListWrapper>(json);
-                List<PlayerData> playerDatas = wrapper.playerDatas;
-                DisplayRanking(playerDatas);
+                try 
+                {
+                    PlayerListWrapper wrapper = JsonUtility.FromJson<PlayerListWrapper>(json);
+                    if (wrapper != null && wrapper.playerDatas != null)
+                    {
+                        List<PlayerData> playerDataList = new List<PlayerData>(wrapper.playerDatas);
+                        DisplayRanking(playerDataList);
+                    }
+                    else
+                    {
+                        Debug.LogError("Failed to parse JSON response");
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogError($"JSON Parse Error: {e.Message}");
+                    Debug.LogError($"JSON content: {json}");
+                }
             }
             else
             {
-                Debug.LogError("Error: " + www.error);
+                Debug.LogError($"Error: {www.error}");
+                Debug.LogError($"Response Code: {www.responseCode}");
+                Debug.LogError($"Response: {www.downloadHandler.text}");
             }
         }
     }
@@ -65,8 +81,11 @@ public class RankingManager : MonoBehaviour
                 string json = www.downloadHandler.text;
                 Debug.Log("Received JSON: " + json);
                 PlayerListWrapper wrapper = JsonUtility.FromJson<PlayerListWrapper>(json);
-                List<PlayerData> playerDatas = wrapper.playerDatas;
-                DisplayRanking(playerDatas);
+                if (wrapper != null && wrapper.playerDatas != null)
+                {
+                    List<PlayerData> playerDataList = new List<PlayerData>(wrapper.playerDatas);
+                    DisplayRanking(playerDataList);
+                }
             }
             else
             {
@@ -77,6 +96,11 @@ public class RankingManager : MonoBehaviour
 
     void DisplayRanking(List<PlayerData> playerDatas)
     {
+        foreach (Transform child in RankingPoint)
+        {
+            Destroy(child.gameObject);
+        }
+
         foreach (var playerData in playerDatas)
         {
             GameObject rankingInstance = Instantiate(RankingBorder, RankingPoint);
@@ -88,9 +112,10 @@ public class RankingManager : MonoBehaviour
             }
             else
             {
-                tmpText.text = "Ranking:" + playerData.id + " playername:" + playerData.playername +
-                               " Winrate:" + playerData.winrate + "%" +
-                               " Win:" + playerData.wincount + " lose:" + playerData.losecount;
+                tmpText.text = $"#{playerData.ranking} " +
+                              $"{playerData.playername} " +
+                              $"Winrate: {playerData.winrate:F1}% " +
+                              $"(W:{playerData.wincount} L:{playerData.losecount})";
             }
         }
     }

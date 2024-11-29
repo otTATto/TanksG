@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
 using UnityEngine.Networking;
@@ -11,7 +12,10 @@ public class UserReistration : MonoBehaviour
 {
     private IDDisplayer iDDisplayer;
     public TMP_InputField playernameInput;
-    private string userReistrationURL = "http://localhost/userreistration.php";
+    private const string BASE_URL = "127.0.0.1";
+    private const string PORT = "8000";
+    private const string API_PATH = "api/gameusers/update-name";
+    private string userReistrationURL => $"http://{BASE_URL}:{PORT}/{API_PATH}";
     public TextMeshProUGUI errorTX;
     public TextMeshProUGUI informationTX;
     private bool isPlayerExsist = true;
@@ -75,36 +79,56 @@ public class UserReistration : MonoBehaviour
 
     IEnumerator ChangeName() 
     {
-
         WWWForm form = new WWWForm();
         form.AddField("id", playerID);
         form.AddField("playername", playernameInput.text);
+
+        Debug.Log($"Sending request to: {userReistrationURL}");
+        Debug.Log($"Data: id={playerID}, name={playernameInput.text}");
+
         using (UnityWebRequest www = UnityWebRequest.Post(userReistrationURL, form))
         {
             yield return www.SendWebRequest();
 
             if (www.result == UnityWebRequest.Result.Success)
-
             {
-                if (www.downloadHandler.text == "success")
+                string response = www.downloadHandler.text;
+                Debug.Log($"Response: {response}");
+                
+                try
                 {
-                    informationTX.text = "Name change successed";
+                    var responseData = JsonUtility.FromJson<ChangeNameResponse>(response);
+                    if (responseData.success)
+                    {
+                        informationTX.text = "Name change succeeded";
+                        iDDisplayer.SetPlayerName(playernameInput.text);
+                    }
+                    else
+                    {
+                        errorTX.text = responseData.error ?? "Name change failed";
+                    }
                 }
-                else
+                catch (Exception e)
                 {
-                    Debug.Log(www.downloadHandler.text);
-                    //feedbackText.text = "Registration failed!";
-                    Debug.Log("failed!");
+                    Debug.LogError($"JSON parse error: {e.Message}");
+                    errorTX.text = "Error processing response";
                 }
             }
-
             else
             {
-                // feedbackText.text = "Error: " + www.error;
-                Debug.Log("Error: " + www.error);
+                Debug.LogError($"Error: {www.error}");
+                Debug.LogError($"Response Code: {www.responseCode}");
+                Debug.LogError($"Response Text: {www.downloadHandler.text}");
+                errorTX.text = "Connection error";
             }
         }
+    }
 
+    [System.Serializable]
+    private class ChangeNameResponse
+    {
+        public bool success;
+        public string error;
     }
 
 }

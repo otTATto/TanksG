@@ -37,4 +37,9 @@ Route::post('/gameusers', [GameUserController::class, 'store']); // 新規ユー
 
 // プレイヤー情報取得のルートを追加
 Route::post('/getplayerinformation', [GameUserController::class, 'getPlayerInformation']);
-Route::post('/gameusers', [GameUserController::class, 'store']);
+
+// 名前変更のルートを修正
+Route::post('gameusers/update-name', [GameUserController::class, 'updateName']);
+
+// ランキング更新のルートを追加
+Route::post('/updateranking', [GameUserController::class, 'updateRanking']);

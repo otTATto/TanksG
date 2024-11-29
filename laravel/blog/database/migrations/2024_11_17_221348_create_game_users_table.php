@@ -12,10 +12,6 @@ return new class extends Migration
             $table->id();
             $table->uuid('uuid')->unique();
             $table->string('name')->default('NoName');
-            $table->integer('ranking')->default(0);
-            $table->integer('winrate')->default(0);
-            $table->integer('wincount')->default(0);
-            $table->integer('losecount')->default(0);
             $table->boolean('is_suspended')->default(false);
             $table->timestamps();
         });

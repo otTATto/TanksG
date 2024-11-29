@@ -12,7 +12,7 @@ public class IDDisplayer : MonoBehaviour
     private int playerID = 0;
     public static IDDisplayer Instance { get; private set; }
     private string playerName;
-    private const string BASE_URL = "localhost";
+    private const string BASE_URL = "127.0.0.1";
     private const string PORT = "8000";
     private const string API_PATH = "api/getplayerinformation";
     private string fetchURL => $"http://{BASE_URL}:{PORT}/{API_PATH}";
@@ -108,15 +108,10 @@ public class IDDisplayer : MonoBehaviour
         return playerID;
     }
 
-    public void GetPlayerName()
-    {
-        //StartCoroutine(GetPlayerName());
-    }
-
     void Update()
     {
         if (idText != null && !LoadLocalUuid()) idText.text = "New Player";
-        else idText.text = "Player ID: " + playerID.ToString() + "Player Name: " + playerName;
+        else idText.text = "Player ID: " + playerID.ToString() + " " + "Player Name: " + playerName;
     }
      IEnumerator GetPlayerIDData(string uuid)
     {
@@ -129,7 +124,7 @@ public class IDDisplayer : MonoBehaviour
         WWWForm form = new WWWForm();
         form.AddField("uuid", uuid);
 
-        Debug.Log($"Sending request to: {fetchURL}");
+        Debug.Log($"Sending request to: {fetchURL} with UUID: {uuid}");
 
         using (UnityWebRequest www = UnityWebRequest.Post(fetchURL, form))
         {
@@ -138,6 +133,7 @@ public class IDDisplayer : MonoBehaviour
             if (www.result == UnityWebRequest.Result.Success)
             {
                 string response = www.downloadHandler.text;
+                Debug.Log($"Response: {response}");
                 try 
                 {
                     PlayerData playerData = JsonUtility.FromJson<PlayerData>(response);
@@ -147,12 +143,14 @@ public class IDDisplayer : MonoBehaviour
                 catch (Exception e)
                 {
                     Debug.LogError($"JSONパースエラー: {e.Message}");
+                    Debug.LogError($"Response: {www.downloadHandler.text}");
                 }
             }
             else
             {
                 Debug.LogError($"Error: {www.error}");
                 Debug.LogError($"Response Code: {www.responseCode}");
+                Debug.LogError($"Response Text: {www.downloadHandler.text}");
             }
         }
     }

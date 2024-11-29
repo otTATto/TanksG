@@ -9,14 +9,15 @@ public class PlayerData
 {
     public int id;
     public string playername;
-    public int winrate;
+    public int ranking;
+    public float winrate;
     public int wincount;
     public int losecount;
-    public bool ranking;
 }
 
 [System.Serializable]
 public class PlayerListWrapper
 {
-    public List<PlayerData> playerDatas;
+    public bool success;
+    public PlayerData[] playerDatas;
 }

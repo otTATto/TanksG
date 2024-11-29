@@ -36,7 +36,9 @@ public class Register : MonoBehaviour
             {
                 StartCoroutine(RegisterNewPlayer());
             }
-            SceneManager.LoadScene(SceneNames.Login);     
+            else{
+                SceneManager.LoadScene(SceneNames.Login);
+            }     
         }
     }
     
@@ -70,7 +72,7 @@ public class Register : MonoBehaviour
                         iDDisplayer.SetPlayerIDandName(registerData.id, "NONAME");
                         
                         Debug.Log($"登録成功！ ID: {registerData.id}, UUID: {registerData.uuid}");
-                        SceneManager.LoadScene(SceneNames.HomeScene);
+                        SceneManager.LoadScene(SceneNames.Login);
                     }
                     else
                     {
