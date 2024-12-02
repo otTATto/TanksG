@@ -5,41 +5,41 @@ using UnityEngine.SceneManagement;
 public class ReadyButton : MonoBehaviour
 {
     private Button readyButton;
-    private NetworkManager networkManager;
 
     private void Awake()
     {
         readyButton = GetComponent<Button>();
         readyButton.onClick.AddListener(OnClickReadyButton);
-        networkManager = GameObject.FindWithTag("NetworkManager").GetComponent<NetworkManager>();
     }
 
     private void OnClickReadyButton()
     {
-        if (networkManager.isClient) // TODO: サーバに接続しているかどうかで確認
+        if (NetworkManager.instance.isClient) // TODO: サーバに接続しているかどうかで確認
         {
             // クライアントからサーバに対して準備完了を通知する
-            networkManager.SendFromClient(new byte[] { (byte)NetworkDataTypes.DataType.READY });
+            NetworkManager.instance.SendFromClient(new byte[] { (byte)NetworkDataTypes.DataType.READY });
         }
     }
 
     private void Update()
     {
-        if (networkManager.isClient && networkManager.client.isReady)
+        if (NetworkManager.instance.isClient && NetworkManager.instance.client.isReady)
         {
-            // networkManager.client.isReady = false;
+            // NetworkManager.instance.client.isReady = false;
             SceneManager.LoadScene(SceneNames.GameScene);
         }
-        else if (networkManager.isServer && networkManager.server.IsReady())
+        else if (NetworkManager.instance.isServer && NetworkManager.instance.server.IsReady())
         {
             // サーバからクライアントに対して準備完了を通知する
             for (int i = 0; i < Server.MAX_CLIENTS; i++)
             {
-                networkManager.SendFromServer(new byte[] { (byte)NetworkDataTypes.DataType.READY }, i);
+                byte message = (byte)(NetworkDataTypes.DataType.TANK_ID + NetworkDataTypes.TANK_IDs[i]);
+                Debug.Log($"send tankId: 0x{message:X}");
+                NetworkManager.instance.SendFromServer(new byte[] { message }, i);
             }
             Debug.Log("sent ready to all clients");
 
-            networkManager.server.ResetReady();
+            NetworkManager.instance.server.ResetReady();
             SceneManager.LoadScene(SceneNames.GameScene);
         }
     }

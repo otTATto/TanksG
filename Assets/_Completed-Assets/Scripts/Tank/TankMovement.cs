@@ -4,7 +4,7 @@ namespace Complete
 {
     public class TankMovement : MonoBehaviour
     {
-        public int m_PlayerNumber = 1;              // Used to identify which tank belongs to which player.  This is set by this tank's manager.
+        public int m_PlayerNumber = -1;              // Used to identify which tank belongs to which player.  This is set by this tank's manager.
         public float m_Speed = 12f;                 // How fast the tank moves forward and back.
         public float m_TurnSpeed = 180f;            // How fast the tank turns in degrees per second.
         public AudioSource m_MovementAudio;         // Reference to the audio source used to play engine sounds. NB: different to the shooting audio source.
@@ -24,6 +24,8 @@ namespace Complete
         private ParticleSystem[] m_particleSystems; // References to all the particles systems used by the Tanks
         private float m_TurretTurnInputValue;             //砲台の回転入力 
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
+
+        public bool isPlayerObject = false;
 
         private void TurretTurn (){
             float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
@@ -78,15 +80,18 @@ namespace Complete
         private void Start ()
         {
             // The axes names are based on player number.
-            m_MovementAxisName = "Vertical" + m_PlayerNumber;
-            m_TurnAxisName = "Horizontal" + m_PlayerNumber;
-            m_TurretTurnAxisName = "TurretTurn"+m_PlayerNumber  ;
+            m_MovementAxisName = "Vertical1";
+            m_TurnAxisName = "Horizontal1";
+            m_TurretTurnAxisName = "TurretTurn1";
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
         }
 
         private void Update ()
         {
+            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            if (!isPlayerObject) return;
+
             // Store the value of both input axes.
             m_MovementInputValue = Input.GetAxis (m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis (m_TurnAxisName);
@@ -126,6 +131,9 @@ namespace Complete
 
         private void FixedUpdate ()
         {
+            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            if (!isPlayerObject) return;
+
             // Adjust the rigidbodies position and orientation in FixedUpdate.
             Move ();
             Turn ();

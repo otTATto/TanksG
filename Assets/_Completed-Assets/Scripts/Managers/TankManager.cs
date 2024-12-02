@@ -35,6 +35,13 @@ namespace Complete
             m_Movement.m_PlayerNumber = m_PlayerNumber;
             m_Shooting.m_PlayerNumber = m_PlayerNumber;
 
+            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            if (NetworkManager.instance.isClient && NetworkManager.instance.GetTankId() == m_PlayerNumber)
+            {
+                m_Movement.isPlayerObject = true;
+                m_Shooting.isPlayerObject = true;
+            }
+
             // Create a string using the correct color that says 'PLAYER 1' etc based on the tank's color and the player's number.
             m_ColoredPlayerText = "<color=#" + ColorUtility.ToHtmlStringRGB(m_PlayerColor) + ">PLAYER " + m_PlayerNumber + "</color>";
 

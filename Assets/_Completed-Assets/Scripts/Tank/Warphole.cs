@@ -4,52 +4,52 @@ using UnityEngine;
 public class Warphole : MonoBehaviour
 {
     public LayerMask m_TankMask;
-    public float warpDelay = 2f;    // ƒ[ƒv‚Ü‚Å‚Ì‘Ò‹@ŠÔ
-    public Transform transHole;     // ƒ[ƒvæ‚ÌˆÊ’u
-    private bool isWarping = false; // ƒ[ƒv’†‚©‚Ç‚¤‚©‚Ìƒtƒ‰ƒO
+    public float warpDelay = 2f;    // ãƒ¯ãƒ¼ãƒ—ã¾ã§ã®å¾…æ©Ÿæ™‚é–“
+    public Transform transHole;     // ãƒ¯ãƒ¼ãƒ—å…ˆã®ä½ç½®
+    private bool isWarping = false;  // ãƒ¯ãƒ¼ãƒ—ä¸­ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°
 
-    // OnTriggerEnter‚Éƒ^ƒCƒ}[ˆ—‚Æƒ[ƒvˆ—‚ğ“‡
+    // OnTriggerEnterã«ãƒˆãƒªã‚¬ãƒ¼ãŒå…¥ã£ãŸã¨ãã«å‘¼ã³å‡ºã•ã‚Œã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
     private void OnTriggerEnter(Collider other)
     {
-        // Õ“Ë‚µ‚½ƒIƒuƒWƒFƒNƒg‚ªm_TankMask‚ÉŠÜ‚Ü‚ê‚Ä‚¢‚é‚©ƒ`ƒFƒbƒN
+        // ã‚¿ãƒ³ã‚¯ã®ãƒ¬ã‚¤ãƒ¤ãƒ¼ãŒm_TankMaskã«å«ã¾ã‚Œã¦ã„ã‚‹ã‹ã©ã†ã‹ã‚’ãƒã‚§ãƒƒã‚¯
         if (((1 << other.gameObject.layer) & m_TankMask) != 0 && !isWarping)
         {
             TankWarp tankWarp = other.GetComponent<TankWarp>();
 
             if (tankWarp.canWarp)
             {
-                // íÔ‚Ì“_–Å‚ğŠJn‚µAƒ[ƒv€”õ
+                // ã‚¿ãƒ³ã‚¯ã®ä½ç½®ã«ãƒ¯ãƒ¼ãƒ—ã‚’é–‹å§‹ã™ã‚‹
                 tankWarp.StartBlinking();
 
-                // ƒ[ƒv’†‚Å‚ ‚é‚±‚Æ‚ğ¦‚·ƒtƒ‰ƒO‚ğİ’è
+                // ãƒ¯ãƒ¼ãƒ—ä¸­ã‹ã©ã†ã‹ã®ãƒ•ãƒ©ã‚°ã‚’è¨­å®š
                 isWarping = true;
 
-                // ƒRƒ‹[ƒ`ƒ“‚ğŠJn‚µ‚ÄAƒ^ƒCƒ}[Œã‚Éƒ[ƒv‚ğÀs
+                // ä¸€å®šæ™‚é–“å¾Œã«ãƒ¯ãƒ¼ãƒ—ã‚’é–‹å§‹ã™ã‚‹ãŸã‚ã«ã‚³ãƒ«ãƒ¼ãƒãƒ³ã‚’ä½¿ç”¨
                 StartCoroutine(WarpAfterDelay(other.transform));
             }
         }
     }
 
-    // ƒ[ƒv‚·‚é‚Ü‚Å‚Ì‘Ò‹@ˆ—‚ğs‚¤ƒRƒ‹[ƒ`ƒ“
+    // ãƒ¯ãƒ¼ãƒ—ã¾ã§ã®å¾…æ©Ÿæ™‚é–“ã®é–“ã«å‘¼ã³å‡ºã•ã‚Œã‚‹ã‚³ãƒ«ãƒ¼ãƒãƒ³
     private IEnumerator WarpAfterDelay(Transform target)
     {
-        // w’è‚µ‚½ŠÔ‚¾‚¯‘Ò‹@
+        // å¾…æ©Ÿæ™‚é–“ã‚’å¾…ã¤
         yield return new WaitForSeconds(warpDelay);
 
-        // ƒ[ƒvˆ—‚ğŠJn
+        // ãƒ¯ãƒ¼ãƒ—ã‚’é–‹å§‹ã™ã‚‹
         StartWarp(target);
 
-        // ƒ[ƒv‚ªŠ®—¹‚µ‚½‚Ì‚Åƒtƒ‰ƒO‚ğƒŠƒZƒbƒg
+        // ãƒ¯ãƒ¼ãƒ—ãŒçµ‚äº†ã—ãŸã“ã¨ã‚’ãƒ•ãƒ©ã‚°ã§è¨­å®š
         isWarping = false;
     }
 
-    // ƒ[ƒvˆ—‚ğs‚¤
+    // ãƒ¯ãƒ¼ãƒ—ã‚’é–‹å§‹ã™ã‚‹ãƒ¡ã‚½ãƒƒãƒ‰
     private void StartWarp(Transform target)
     {
         Rigidbody targetRigidbody = target.GetComponent<Rigidbody>();
         if (transHole != null)
         {
-            // ƒ[ƒvæ‚ÌˆÊ’u‚Éƒ^[ƒQƒbƒg‚ğˆÚ“®
+            // ãƒ¯ãƒ¼ãƒ—å…ˆã®ä½ç½®ã«ã‚¿ãƒ³ã‚¯ã‚’ç§»å‹•
             targetRigidbody.MovePosition(transHole.position);
         }
     }

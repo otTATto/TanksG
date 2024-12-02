@@ -34,6 +34,8 @@ namespace Complete
         private bool m_IsSettingMine = false;       // 地雷設置中かどうか
         private float m_MineSetupTimer = 0f;        // 地雷設置タイマー
 
+        public bool isPlayerObject = false;
+
         private void OnEnable()
         {
             // When the tank is turned on, reset the launch force and the UI
@@ -45,18 +47,21 @@ namespace Complete
         private void Start ()
         {
             // The fire axis is based on the player number.
-            m_FireButton = "Fire" + m_PlayerNumber;
+            m_FireButton = "Fire1";
             tankWarp = GetComponent<TankWarp>();
 
             // The rate that the launch force charges up is the range of possible forces by the max charge time.
             m_ChargeSpeed = (m_MaxLaunchForce - m_MinLaunchForce) / m_MaxChargeTime;
 
-            m_MineButton = "Mine" + m_PlayerNumber;    // "Mine1" or "Mine2"
+            m_MineButton = "Mine1";
         }
 
 
         private void Update ()
         {
+            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            if (!isPlayerObject) return;
+
             // 地雷設置中は射撃できないようにする
             if (!m_IsSettingMine)
             {

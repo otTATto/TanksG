@@ -60,6 +60,7 @@ namespace Complete
             // Create a collection of transforms the same size as the number of tanks.
             Transform[] targets = new Transform[m_Tanks.Length];
             targets[0]=m_Tanks[0].m_Movement.m_Turret.transform;
+            targets[1]=m_Tanks[1].m_Movement.m_Turret.transform;
             /*
             // For each of these transforms...
             for (int i = 0; i < targets.Length; i++)

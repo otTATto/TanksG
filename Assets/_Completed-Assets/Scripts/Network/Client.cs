@@ -8,8 +8,9 @@ public class Client
     private Socket clientSocket;
     private const int BUFFER_SIZE = 1024;
     private byte[] buffer;
-    public bool isReady = false;
     public int tankId = -1;
+    public bool isReady = false;
+    public int message = 0;
 
     public Client()
     {
@@ -48,21 +49,14 @@ public class Client
         {
             try
             {
+                // 受信したデータ容量を取得
                 int received = await Task.Factory.FromAsync<int>(
                     clientSocket.BeginReceive(buffer, 0, BUFFER_SIZE, SocketFlags.None, null, null),
                     clientSocket.EndReceive);
 
                 if (received > 0)
                 {
-                    // ここでデータ処理を行う
-                    UnityEngine.Debug.Log($"Received {received} bytes");
-
-                    switch (received)
-                    {
-                        case (int)NetworkDataTypes.DataType.READY:
-                            isReady = true;
-                            break;
-                    }
+                    ProcessMessage(buffer[0]);
                 }
             }
             catch (Exception e)
@@ -70,6 +64,24 @@ public class Client
                 UnityEngine.Debug.LogError($"Receive error: {e.Message}");
                 break;
             }
+        }
+    }
+
+    private void ProcessMessage(byte data)
+    {
+        message = data; // TODO: デバッグ用
+        switch (data)
+        {
+            // tankIdを付与
+            case (int)NetworkDataTypes.DataType.TANK_ID_1:
+                tankId = 1;
+                isReady = true;
+                break;
+
+            case (int)NetworkDataTypes.DataType.TANK_ID_2:
+                tankId = 2;
+                isReady = true;
+                break;
         }
     }
 } 

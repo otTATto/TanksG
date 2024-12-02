@@ -5,7 +5,7 @@ using System.Net.Sockets;
 
 public class NetworkManager : MonoBehaviour
 {
-    private static NetworkManager instance;
+    public static NetworkManager instance; // シングルトンインスタンス
     public Server server;
     public Client client;
     public bool isServer = false;
@@ -13,6 +13,16 @@ public class NetworkManager : MonoBehaviour
 
     void Awake()
     {
+        // シングルトンインスタンスを作成
+        if (instance == null)
+        {
+            instance = this;
+        }
+        else
+        {
+            Destroy(gameObject);
+        }
+
         DontDestroyOnLoad(gameObject);
 
         if (isServer)
@@ -55,12 +65,20 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    public int GetTankId()
+    {
+        if (client != null)
+        {
+            return client.tankId;
+        }
+        return -1;
+    }
+
     public void OnGUI()
     {
         if (isClient)
         {
-            string message = client.isReady ? "true" : "false";
-            GUI.Label(new Rect(10, 30, 100, 20), $"client ready: {message}", new GUIStyle() { normal = { textColor = Color.black } });
+            GUI.Label(new Rect(10, 30, 100, 20), $"client ready: {client.isReady}, message: 0x{client.message:X}", new GUIStyle() { normal = { textColor = Color.black } });
         }
     }
 }
