@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 
 namespace Complete
 {
@@ -26,11 +27,6 @@ namespace Complete
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
 
         public bool isPlayerObject = false;
-
-        private void TurretTurn (){
-            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
-            m_Turret.transform.Rotate(0f,turn,0f);//回転
-        }
 
         private void Awake ()
         {
@@ -111,8 +107,8 @@ namespace Complete
                 {
                     // ... change the clip to idling and play it.
                     m_MovementAudio.clip = m_EngineIdling;
-                    m_MovementAudio.pitch = Random.Range (m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
-                    m_MovementAudio.Play ();
+                    m_MovementAudio.pitch = UnityEngine.Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
+                    m_MovementAudio.Play();
                 }
             }
             else
@@ -122,7 +118,7 @@ namespace Complete
                 {
                     // ... change the clip to driving and play.
                     m_MovementAudio.clip = m_EngineDriving;
-                    m_MovementAudio.pitch = Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
+                    m_MovementAudio.pitch = UnityEngine.Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
                     m_MovementAudio.Play();
                 }
             }
@@ -145,9 +141,27 @@ namespace Complete
         {
             // Create a vector in the direction the tank is facing with a magnitude based on the input, speed and the time between frames.
             Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
+            if (movement == Vector3.zero) return;
+
+            Vector3 position = m_Rigidbody.position + movement;
+
+            // サーバに位置を送信
+            SendPosition(position);
 
             // Apply this movement to the rigidbody's position.
-            m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
+            m_Rigidbody.MovePosition(position);
+        }
+
+        // client method
+        private void SendPosition(Vector3 position)
+        {
+            byte[] data = new byte[14];
+            data[0] = (byte)NetworkDataTypes.DataType.TANK_POSITION;
+            data[1] = (byte)m_PlayerNumber;
+            BitConverter.GetBytes(position.x).CopyTo(data, 2);
+            BitConverter.GetBytes(position.y).CopyTo(data, 6);
+            BitConverter.GetBytes(position.z).CopyTo(data, 10);
+            NetworkManager.instance.SendFromClient(data);
         }
 
 
@@ -155,12 +169,53 @@ namespace Complete
         {
             // Determine the number of degrees to be turned based on the input, speed and time between frames.
             float turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
+            if (turn == 0f) return;
 
-            // Make this into a rotation in the y axis.
+            // Create a rotation in the y axis.
             Quaternion turnRotation = Quaternion.Euler (0f, turn, 0f);
+            Quaternion rotation = m_Rigidbody.rotation * turnRotation;
+
+            // サーバに回転を送信
+            SendRotation(rotation);
 
             // Apply this rotation to the rigidbody's rotation.
-            m_Rigidbody.MoveRotation (m_Rigidbody.rotation * turnRotation);
+            m_Rigidbody.MoveRotation(rotation);
+        }
+
+        private void SendRotation(Quaternion rotation)
+        {
+            byte[] data = new byte[18];
+            data[0] = (byte)NetworkDataTypes.DataType.TANK_ROTATION;
+            data[1] = (byte)m_PlayerNumber;
+            BitConverter.GetBytes(rotation.x).CopyTo(data, 2);
+            BitConverter.GetBytes(rotation.y).CopyTo(data, 6);
+            BitConverter.GetBytes(rotation.z).CopyTo(data, 10);
+            BitConverter.GetBytes(rotation.w).CopyTo(data, 14);
+            NetworkManager.instance.SendFromClient(data);
+        }
+
+        private void TurretTurn ()
+        {
+            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
+            if (turn == 0f) return;
+
+            Quaternion turretRotation = Quaternion.Euler(0f, turn, 0f);
+
+            // サーバに砲塔の回転を送信
+            m_Turret.transform.Rotate(0f, turn, 0f); //回転
+            SendTurretRotation(m_Turret.transform.rotation);
+        }
+
+        private void SendTurretRotation(Quaternion rotation)
+        {
+            byte[] data = new byte[18];
+            data[0] = (byte)NetworkDataTypes.DataType.TURRET_ROTATION;
+            data[1] = (byte)m_PlayerNumber;
+            BitConverter.GetBytes(rotation.x).CopyTo(data, 2);
+            BitConverter.GetBytes(rotation.y).CopyTo(data, 6);
+            BitConverter.GetBytes(rotation.z).CopyTo(data, 10);
+            BitConverter.GetBytes(rotation.w).CopyTo(data, 14);
+            NetworkManager.instance.SendFromClient(data);
         }
     }
 }

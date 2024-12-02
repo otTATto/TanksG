@@ -25,7 +25,7 @@ public class ReadyButton : MonoBehaviour
     {
         if (NetworkManager.instance.isClient && NetworkManager.instance.client.isReady)
         {
-            // NetworkManager.instance.client.isReady = false;
+            NetworkManager.instance.client.isReady = false;
             SceneManager.LoadScene(SceneNames.GameScene);
         }
         else if (NetworkManager.instance.isServer && NetworkManager.instance.server.IsReady())

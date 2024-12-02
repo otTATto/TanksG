@@ -2,6 +2,7 @@ using UnityEngine;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using Complete;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -36,6 +37,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    // server method
     private void StartServer(int port)
     {
         server = new Server();
@@ -43,12 +45,14 @@ public class NetworkManager : MonoBehaviour
         server.Listen();
     }
 
+    // client method
     private void StartClient(string ipAddress, int port)
     {
         client = new Client();
         client.Connect(ipAddress, port);
     }
 
+    // server method
     public void SendFromServer(byte[] data, int clientId)
     {
         if (server != null)
@@ -57,6 +61,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    // client method
     public void SendFromClient(byte[] data)
     {
         if (client != null)
@@ -65,6 +70,7 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
+    // client method
     public int GetTankId()
     {
         if (client != null)
@@ -74,6 +80,42 @@ public class NetworkManager : MonoBehaviour
         return -1;
     }
 
+    public void SetRigidbodies(Rigidbody[] m_Rigidbodies)
+    {
+        if (isServer) server.m_Rigidbodies = m_Rigidbodies;
+        if (isClient) client.m_Rigidbodies = m_Rigidbodies;
+    }
+
+    public void SetTurrets(GameObject[] m_Turrets)
+    {
+        if (isServer) server.m_Turrets = m_Turrets;
+        if (isClient) client.m_Turrets = m_Turrets;
+    }
+
+    public void SetShell(Rigidbody m_Shell)
+    {
+        if (isServer) server.m_Shell = m_Shell;
+        if (isClient) client.m_Shell = m_Shell;
+    }
+
+    public void SetMine(GameObject m_Mine)
+    {
+        if (isServer) server.m_Mine = m_Mine;
+        if (isClient) client.m_Mine = m_Mine;
+    }
+
+    public void SetCartridgePrefabs(GameObject shellCartridgePrefab, GameObject mineCartridgePrefab)
+    {
+        // サーバ
+        if (isServer) server.shellCartridgePrefab = shellCartridgePrefab;
+        if (isServer) server.mineCartridgePrefab = mineCartridgePrefab;
+
+        // クライアント
+        if (isClient) client.shellCartridgePrefab = shellCartridgePrefab;
+        if (isClient) client.mineCartridgePrefab = mineCartridgePrefab;
+    }
+
+    // client method (for debug)
     public void OnGUI()
     {
         if (isClient)

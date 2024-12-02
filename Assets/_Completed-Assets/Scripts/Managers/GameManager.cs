@@ -43,6 +43,9 @@ namespace Complete
 
         private void SpawnAllTanks()
         {
+            Rigidbody[] m_Rigidbodies = new Rigidbody[m_Tanks.Length];
+            GameObject[] m_Turrets = new GameObject[m_Tanks.Length];
+
             // For all the tanks...
             for (int i = 0; i < m_Tanks.Length; i++)
             {
@@ -51,7 +54,24 @@ namespace Complete
                     Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
                 m_Tanks[i].m_PlayerNumber = i + 1;
                 m_Tanks[i].Setup();
+
+                m_Rigidbodies[i] = m_Tanks[i].m_Instance.GetComponent<Rigidbody>();
+                m_Turrets[i] = m_Tanks[i].m_Instance.GetComponent<TankMovement>().m_Turret;
             }
+
+            // 戦車の剛体を設定
+            NetworkManager.instance.SetRigidbodies(m_Rigidbodies);
+            // 砲塔を設定
+            NetworkManager.instance.SetTurrets(m_Turrets);
+
+            // 砲弾のプレハブを設定
+            TankShooting tankShooting = m_Tanks[0].m_Instance.GetComponent<TankShooting>();
+            NetworkManager.instance.SetShell(tankShooting.m_Shell);
+            NetworkManager.instance.SetMine(tankShooting.m_MinePrefab);
+            // 砲弾・地雷のプレハブを設定
+            CartridgeSpawner spawner = GetComponent<CartridgeSpawner>();
+            NetworkManager.instance.SetCartridgePrefabs(spawner.shellCartridgePrefab, spawner.mineCartridgePrefab);
+
         }
 
 
@@ -61,14 +81,7 @@ namespace Complete
             Transform[] targets = new Transform[m_Tanks.Length];
             targets[0]=m_Tanks[0].m_Movement.m_Turret.transform;
             targets[1]=m_Tanks[1].m_Movement.m_Turret.transform;
-            /*
-            // For each of these transforms...
-            for (int i = 0; i < targets.Length; i++)
-            {
-                // ... set it to the appropriate tank transform.
-                targets[i] = m_Tanks[i].m_Instance.transform;
-            }
-            */
+            
             // These are the targets the camera should follow.
             m_CameraControl.m_Targets = targets;
             // ミニマップ用のカメラにもターゲットを設定
@@ -92,7 +105,17 @@ namespace Complete
             if (m_GameWinner != null)
             {
                 // If there is a game winner, restart the level.
-                SceneManager.LoadScene(SceneNames.TitleScene);
+                // ゲーム終了メッセージを送信
+                if (NetworkManager.instance.isServer)
+                {
+                    for (int i = 0; i < Server.MAX_CLIENTS; i++)
+                    {
+                        byte[] data = new byte[] { (byte)NetworkDataTypes.DataType.GAME_END };
+                        NetworkManager.instance.SendFromServer(data, i);
+                    }
+                    // ゲーム終了メッセージを送信したらシーンをロード
+                    SceneManager.LoadScene(SceneNames.LobbyScene);
+                }
             }
             else
             {
@@ -217,7 +240,9 @@ namespace Complete
             {
                 // ... and if one of them has enough rounds to win the game, return it.
                 if (m_Tanks[i].m_Wins == m_NumRoundsToWin)
+                {
                     return m_Tanks[i];
+                }
             }
 
             // If no tanks have enough rounds to win, return null.

@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 namespace Complete
 {
@@ -71,7 +72,7 @@ namespace Complete
             HandleMineSetup();
         }
 
-        // 射撃処理を別メソッドに分離
+        // 射撃処理
         private void HandleShooting()
         {
             // 砲弾がなくなったら発射できない
@@ -82,46 +83,46 @@ namespace Complete
 
             // The slider should have a default value of the minimum launch force.
             m_AimSlider.value = m_MinLaunchForce;
-            if (tankWarp.canWarp) { 
-            // If the max force has been exceeded and the shell hasn't yet been launched...
-            if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
-            {
-                // チャージを往復させる
-                m_CurrentLaunchForce = m_MinLaunchForce;
-                
-                // Change the clip to the charging clip and start it playing.
-                m_ShootingAudio.clip = m_ChargingClip;
-                m_ShootingAudio.Play ();
-            }
-            // Otherwise, if the fire button has just started being pressed...
-            else if (Input.GetButtonDown (m_FireButton))
-            {
-                // ... reset the fired flag and reset the launch force.
-                m_Fired = false;
-                m_CurrentLaunchForce = m_MinLaunchForce;
+            if (tankWarp.canWarp) {
+                // If the max force has been exceeded and the shell hasn't yet been launched...
+                if (m_CurrentLaunchForce >= m_MaxLaunchForce && !m_Fired)
+                {
+                    // チャージを往復させる
+                    m_CurrentLaunchForce = m_MinLaunchForce;
+                    
+                    // Change the clip to the charging clip and start it playing.
+                    m_ShootingAudio.clip = m_ChargingClip;
+                    m_ShootingAudio.Play ();
+                }
+                // Otherwise, if the fire button has just started being pressed...
+                else if (Input.GetButtonDown (m_FireButton))
+                {
+                    // ... reset the fired flag and reset the launch force.
+                    m_Fired = false;
+                    m_CurrentLaunchForce = m_MinLaunchForce;
 
-                // Change the clip to the charging clip and start it playing.
-                m_ShootingAudio.clip = m_ChargingClip;
-                m_ShootingAudio.Play ();
-            }
-            // Otherwise, if the fire button is being held and the shell hasn't been launched yet...
-            else if (Input.GetButton (m_FireButton) && !m_Fired)
-            {
-                // Increment the launch force and update the slider.
-                m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;
+                    // Change the clip to the charging clip and start it playing.
+                    m_ShootingAudio.clip = m_ChargingClip;
+                    m_ShootingAudio.Play ();
+                }
+                // Otherwise, if the fire button is being held and the shell hasn't been launched yet...
+                else if (Input.GetButton (m_FireButton) && !m_Fired)
+                {
+                    // Increment the launch force and update the slider.
+                    m_CurrentLaunchForce += m_ChargeSpeed * Time.deltaTime;
 
-                m_AimSlider.value = m_CurrentLaunchForce;
-            }
-            // Otherwise, if the fire button is released and the shell hasn't been launched yet...
-            else if (Input.GetButtonUp (m_FireButton) && !m_Fired)
-            {
-                // ... launch the shell.
-                Fire ();
-            }
+                    m_AimSlider.value = m_CurrentLaunchForce;
+                }
+                // Otherwise, if the fire button is released and the shell hasn't been launched yet...
+                else if (Input.GetButtonUp (m_FireButton) && !m_Fired)
+                {
+                    // ... launch the shell.
+                    Fire ();
+                }
             }
         }
 
-        // 地雷設置処理を別メソッドに分離
+        // 地雷設置処理
         private void HandleMineSetup()
         {
             if (m_RemainingMines > 0 && Input.GetButtonDown(m_MineButton) && !m_IsSettingMine)
@@ -153,12 +154,36 @@ namespace Complete
             // Set the shell's velocity to the launch force in the fire position's forward direction.
             shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward;
 
+            // サーバに砲弾の位置を送信
+            SendShellPosition(shellInstance.position, shellInstance.rotation, shellInstance.velocity);
+
             // Change the clip to the firing clip and play it.
             m_ShootingAudio.clip = m_FireClip;
             m_ShootingAudio.Play ();
 
             // Reset the launch force.  This is a precaution in case of missing button events.
             m_CurrentLaunchForce = m_MinLaunchForce;
+        }
+
+        // client method
+        private void SendShellPosition(Vector3 position, Quaternion rotation, Vector3 velocity)
+        {
+            byte[] data = new byte[41];
+            data[0] = (byte)NetworkDataTypes.DataType.SHELL_POSITION;
+            // 位置
+            BitConverter.GetBytes(position.x).CopyTo(data, 1);
+            BitConverter.GetBytes(position.y).CopyTo(data, 5);
+            BitConverter.GetBytes(position.z).CopyTo(data, 9);
+            // 回転
+            BitConverter.GetBytes(rotation.x).CopyTo(data, 13);
+            BitConverter.GetBytes(rotation.y).CopyTo(data, 17);
+            BitConverter.GetBytes(rotation.z).CopyTo(data, 21);
+            BitConverter.GetBytes(rotation.w).CopyTo(data, 25);
+            // 速度
+            BitConverter.GetBytes(velocity.x).CopyTo(data, 29);
+            BitConverter.GetBytes(velocity.y).CopyTo(data, 33);
+            BitConverter.GetBytes(velocity.z).CopyTo(data, 37);
+            NetworkManager.instance.SendFromClient(data);
         }
 
         private void StartSettingMine()
@@ -182,9 +207,23 @@ namespace Complete
             
             Instantiate(m_MinePrefab, minePosition, Quaternion.identity);
 
+            // サーバに地雷の位置を送信
+            SendMinePosition(minePosition);
+
             // タンクの移動と射撃を再度有効化
             m_IsSettingMine = false;
             GetComponent<TankMovement>().enabled = true;
+        }
+
+        // client method
+        private void SendMinePosition(Vector3 position)
+        {
+            byte[] data = new byte[13];
+            data[0] = (byte)NetworkDataTypes.DataType.MINE_POSITION;
+            BitConverter.GetBytes(position.x).CopyTo(data, 1);
+            BitConverter.GetBytes(position.y).CopyTo(data, 5);
+            BitConverter.GetBytes(position.z).CopyTo(data, 9);
+            NetworkManager.instance.SendFromClient(data);
         }
     }
 }
