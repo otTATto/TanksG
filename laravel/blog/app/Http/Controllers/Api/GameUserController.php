@@ -156,19 +156,12 @@ class GameUserController extends Controller
     public function updateRanking(Request $request)
     {
         try {
-            \Log::info('Update ranking request:', $request->all());
-            
             $id = $request->input('id');
             $isPlayerWin = $request->input('ifplayerwin');
             
-            // GameUserの存在確認
-            $gameUser = GameUser::find($id);
-            if (!$gameUser) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'User not found'
-                ], 404);
-            }
+            // 更新前のランクを取得
+            $previousRank = PlayerStat::where('game_user_id', $id)
+                ->value('ranking');
 
             \DB::beginTransaction();
             try {
@@ -209,7 +202,25 @@ class GameUserController extends Controller
                              }
                          });
                 
-                \DB::commit();
+                // 更新後のプレイヤー情報を取得
+                $currentPlayer = GameUser::join('player_stats', 'game_users.id', '=', 'player_stats.game_user_id')
+                                          ->where('game_users.id', $id)
+                                          ->select([
+                                              'game_users.id',
+                                              'game_users.name as playername',
+                                              'player_stats.ranking',
+                                              \DB::raw('CAST(player_stats.winrate AS DECIMAL(5,2)) as winrate'),
+                                              'player_stats.wincount',
+                                              'player_stats.losecount'
+                                          ])
+                                          ->first();
+                
+                if (!$currentPlayer) {
+                    throw new \Exception('Current player not found');
+                }
+                
+                // ランクアップしたかどうかのみ確認
+                $isRankUp = $previousRank > $currentPlayer->ranking;
                 
                 // 上位10名を取得
                 $players = GameUser::join('player_stats', 'game_users.id', '=', 'player_stats.game_user_id')
@@ -219,15 +230,19 @@ class GameUserController extends Controller
                                       'game_users.id',
                                       'game_users.name as playername',
                                       'player_stats.ranking',
-                                      'player_stats.winrate',
+                                      \DB::raw('CAST(player_stats.winrate AS DECIMAL(5,2)) as winrate'),
                                       'player_stats.wincount',
                                       'player_stats.losecount'
                                   ])
                                   ->toArray();
                 
+                \DB::commit();
+                
                 return response()->json([
                     'success' => true,
-                    'playerDatas' => $players
+                    'playerDatas' => $players,
+                    'currentPlayer' => $currentPlayer,
+                    'isRankUp' => $isRankUp ?? false
                 ]);
                 
             } catch (\Exception $e) {

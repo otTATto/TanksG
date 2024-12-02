@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\GameUser;
@@ -18,17 +18,12 @@ class GameUserController extends Controller
     public function store(Request $request)
     {
         try {
-            // デバッグ用にリクエストの内容をログに出力
-            \Log::info('Request data:', $request->all());
             
             $gameUser = GameUser::create([
                 'uuid' => Str::uuid(),
                 'name' => $request->input('name', 'NONAME'),
                 'is_suspended' => false
             ]);
-            
-            // デバッグ用に作成されたユーザー情報をログに出力
-            \Log::info('Created user:', $gameUser->toArray());
             
             return response()->json([
                 'success' => true,

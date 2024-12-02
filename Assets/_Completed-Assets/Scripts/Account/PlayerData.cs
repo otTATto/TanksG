@@ -20,4 +20,6 @@ public class PlayerListWrapper
 {
     public bool success;
     public PlayerData[] playerDatas;
+    public PlayerData currentPlayer;
+    public bool isRankUp;
 }
