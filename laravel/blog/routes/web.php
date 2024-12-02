@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\GameUserController;
 use App\Http\Controllers\Admin\GiftLogController;
+use App\Http\Controllers\Admin\ItemController;
 
 // 一般的なルート設定
 Route::get('/', function () {
@@ -39,6 +40,9 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
     Route::resource('game_users', GameUserController::class);
     // アカウント停止・復活
     Route::post('game_users/{game_user}/toggle-suspend', [GameUserController::class, 'toggleSuspend'])->name('game_users.toggleSuspend');
+
+    // アイテム管理
+    Route::get('items', [ItemController::class, 'index'])->name('items.index');
 
     // プレゼント配布履歴
     Route::get('/gift-logs', [GiftLogController::class, 'index'])->name('gift_logs.index');
