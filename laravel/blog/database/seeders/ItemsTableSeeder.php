@@ -15,9 +15,11 @@ class ItemsTableSeeder extends Seeder
     {
         // アイテムのマスターデータ
         $items = [
-            ['id' => 1, 'name' => 'スタミナ回復アイテム'],
-            ['id' => 2, 'name' => '装甲強化アイテム'],
-            ['id' => 3, 'name' => '授業の単位'],
+            ['id' => 1, 'name' => 'Stamina Recovery Item'],     // スタミナ回復アイテム
+            ['id' => 2, 'name' => 'Defense Boost Item'],        // 装甲強化アイテム
+            ['id' => 3, 'name' => 'Class Credit'],              // 授業の単位
+            ['id' => 4, 'name' => 'Experience Point'],          // 経験値
+            ['id' => 5, 'name' => 'Gold'],                      // ゴールド
         ];
         
         // マスターデータを登録
