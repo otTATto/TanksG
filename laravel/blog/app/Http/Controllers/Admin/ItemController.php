@@ -19,10 +19,25 @@ class ItemController extends Controller
         // すべてのアイテム一覧を取得
         $items = Item::all();
 
-        // ToDo: ユーザー検索機能を実装
-
-        // HTML を返す（取得した userItems, gameUsers, items を渡す）
         return view('admin.items.index', compact('userItems', 'gameUsers', 'items'));
+    }
+
+    // アイテムの追加
+    public function store(Request $request)
+    {
+        // リクエストからアイテム名を取得
+        $itemName = $request->input('item_name');
+
+        // アイテム名が空の場合はリダイレクト
+        if (empty($itemName)) {
+            return redirect()->route('admin.items.index');
+        }
+
+        // アイテムを追加
+        Item::create(['name' => $itemName]);
+
+        // アイテム追加後にリダイレクト
+        return redirect()->route('admin.items.index');
     }
 
     // ユーザー検索
@@ -37,7 +52,7 @@ class ItemController extends Controller
             // 指定されたユーザーIDのアイテム一覧を取得
             $userItems = UserItem::where('user_id', $userId)->get();
         }
-        
+
         // すべてのゲームユーザーを取得
         $gameUsers = GameUser::all();
         // すべてのアイテム一覧を取得

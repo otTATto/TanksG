@@ -43,6 +43,7 @@ Route::prefix('admin')->middleware(['auth', 'admin'])->name('admin.')->group(fun
 
     // アイテム管理
     Route::get('items', [ItemController::class, 'index'])->name('items.index');
+    Route::post('items/store', [ItemController::class, 'store'])->name('items.store');
     Route::get('items/search', [ItemController::class, 'search'])->name('items.search');
 
     // プレゼント配布履歴

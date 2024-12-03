@@ -4,7 +4,39 @@
 <div class="container">
     <h1>アイテム管理</h1>
 
+    <h2>1. アイテム一覧</h2>
+
+    <h3>アイテム追加</h3>
+    <form action="{{ route('admin.items.store') }}" method="POST">
+        @csrf
+        <div class="form-group">
+            <label for="item_name">Item Name</label>
+            <input type="text" class="form-control" id="item_name" name="item_name">
+        </div>
+        <button type="submit" class="btn btn-primary">追加</button>
+    </form>
+
+    <table class="table" style="margin-top: 15px; margin-left: 25px;">
+        <thead>
+            <tr>
+                <th>Item ID</th>
+                <th>Item Name</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($items as $item)
+                <tr>
+                    <td>{{ $item->id }}</td>
+                    <td>{{ $item->name }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+
+    <h2>2. ユーザーごとのアイテム一覧</h2>
+
     <!-- ユーザー検索：当該ユーザーの所有アイテムのみを表示 -->
+    <h3>ユーザー検索</h3>
     <form action="{{ route('admin.items.search') }}" method="GET">
         @csrf
         <div class="form-group">
@@ -13,10 +45,9 @@
         </div>
         <button type="submit" class="btn btn-primary">検索</button>
     </form>
+    ※ 空欄検索によって全ユーザーを表示します
 
-    <h2>アイテム一覧</h2>
-
-    <table class="table">
+    <table class="table" style="margin-top: 15px; margin-left: 25px;">
         <thead>
             <tr>
                 <th>User ID</th>
