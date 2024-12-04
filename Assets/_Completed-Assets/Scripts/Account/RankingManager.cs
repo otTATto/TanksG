@@ -13,6 +13,7 @@ public class RankingManager : MonoBehaviour
     public GameObject playerRankingBorderUp;
     public Transform rankingPoint;
     public Transform playerRankingPoint; 
+    public Transform playerRankingUPPoint;
     private const string BASE_URL = "127.0.0.1";
     private const string PORT = "8000";
     private const string API_PATH = "api/updateranking";
@@ -145,9 +146,7 @@ public class RankingManager : MonoBehaviour
             {
                 if(wrapper.isRankUp)
                 {
-                    Instantiate(playerRankingBorderUp, 
-                        new Vector3(-270f, playerRankingPoint.position.y, playerRankingPoint.position.z),
-                        Quaternion.Euler(0f, 0f, 90f), playerRankingPoint);
+                    Instantiate(playerRankingBorderUp, playerRankingUPPoint);
                 }
                 if(wrapper.currentPlayer.ranking > 10 || wrapper.currentPlayer.wincount + wrapper.currentPlayer.losecount < 10)
                 {
