@@ -25,6 +25,8 @@ public class StartButton : MonoBehaviour
         {
             // ユーザーIDが正しい場合、APIを呼び出して状態を確認
             StartCoroutine(CheckAccountSuspended(userId));
+            // ユーザーIDを保持
+            UserManager.Instance.SetUserID(userId);
         }
         else
         {
