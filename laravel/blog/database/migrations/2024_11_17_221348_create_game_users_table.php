@@ -15,7 +15,8 @@ class CreateGameUsersTable extends Migration // クラス名も変更
     {
         Schema::create('game_users', function (Blueprint $table) { // テーブル名を複数形に変更
             $table->id(); // ユーザーID
-            $table->string('name'); // ユーザー名
+            $table->uuid('uuid')->unique();
+            $table->string('name')->default('NoName');
             $table->boolean('is_suspended')->default(false); // アカウント停止情報
             $table->timestamps(); // 作成日時・更新日時
         });

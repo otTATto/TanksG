@@ -34,3 +34,13 @@ Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'check
 Route::post('/grant-item', [GiftController::class, 'grantItem']);
 Route::get('/presents/{user_id}', [GiftController::class, 'getUserPresents']); // プレゼント一覧
 Route::post('/presents/received/{user_id}/{present_id}', [GiftController::class, 'receivePresentById']);
+Route::post('/gameusers', [GameUserController::class, 'store']); // 新規ユーザー登録
+
+// プレイヤー情報取得のルートを追加
+Route::post('/getplayerinformation', [GameUserController::class, 'getPlayerInformation']);
+
+// 名前変更のルートを修正
+Route::post('gameusers/update-name', [GameUserController::class, 'updateName']);
+
+// ランキング更新のルートを追加
+Route::post('/updateranking', [GameUserController::class, 'updateRanking']);

@@ -8,11 +8,26 @@ use Illuminate\Database\Eloquent\Model;
 class GameUser extends Model
 {
     use HasFactory;
-    protected $table = 'game_users'; // テーブル名の指定
-    protected $fillable = ['name', 'is_suspended']; // 許可するカラム
-    public function items()
-{
-    return $this->hasMany(UserItem::class, 'user_id');
-}
+    
+    protected $table = 'game_users';
+    
+    protected $fillable = [
+        'uuid',
+        'name',
+        'is_suspended'
+    ];
+    
+    protected $casts = [
+        'is_suspended' => 'boolean'
+    ];
 
+    public function stats()
+    {
+        return $this->hasOne(PlayerStat::class, 'game_user_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(UserItem::class, 'user_id');
+    }
 }

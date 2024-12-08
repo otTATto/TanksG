@@ -6,4 +6,7 @@ public class SceneNames
     public const string HomeScene = "HomeScene";
     public const string InformationScene = "InformationScene";
     public const string InquiriesScene = "InquiriesScene";
+    public const string Login = "Login";
+    public const string UserReistration = "UserReistration";
+    public const string Ranking = "Ranking";
 }
