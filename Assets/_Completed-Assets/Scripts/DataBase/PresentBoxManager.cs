@@ -14,8 +14,9 @@ public class PresentBoxManager : MonoBehaviour
     [SerializeField] private Button closeButton; // 閉じるボタン
     [SerializeField] private Button openButton; // 開くボタン
 
-    private int user_id = 3; // 動的に取得できる場合は設定を変更
+    private int user_id; // 動的に取得できる場合は設定を変更
     private List<PresentData> presents = new List<PresentData>();
+    private IDDisplayer iDDisplayer;
 
     public static class JsonHelper
     {
@@ -53,6 +54,8 @@ public class PresentBoxManager : MonoBehaviour
         Debug.Log("PresentBoxManager Awake called.");
         closeButton.onClick.AddListener(ClosePresentBox);
         openButton.onClick.AddListener(OpenPresentBox);
+        iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
+        user_id = iDDisplayer.GetPlayerID();
     }
 
     // プレゼントBOXを開く
