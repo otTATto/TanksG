@@ -26,11 +26,12 @@ public class StartButton : MonoBehaviour
         public string error;
     }
 
-    private void Awake()
+    private void Start()
     {
         iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
         startButton = GetComponent<Button>();
         startButton.onClick.AddListener(OnLoginButtonClicked);
+        Debug.Log("1");
         warningText.gameObject.SetActive(false);  // 初期は警告を非表示
     }
 
