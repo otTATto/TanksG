@@ -29,8 +29,14 @@ Route::apiResource('contact', ContactController::class);
 // 返信を追加するエンドポイント
 Route::post('contact/{contact_id}/replies', [ContactController::class, 'addReply']);
 
-// ゲームユーザーのアカウント停止状態を確認するAPI
-Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'checkSuspended']);
+// ゲームユーザーに関するAPI
+// アカウント停止状態を確認するエンドポイント
+Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'checkSuspended']);   
+// 所有アイテム一覧を取得するエンドポイント
+Route::get('game-users/{id}/items', [GameUserController::class, 'getUserItems']);     
+// プレゼントを送るエンドポイント          
 Route::post('/grant-item', [GiftController::class, 'grantItem']);
-Route::get('/presents/{user_id}', [GiftController::class, 'getUserPresents']); // プレゼント一覧
+// プレゼント一覧を取得するエンドポイント
+Route::get('/presents/{user_id}', [GiftController::class, 'getUserPresents']); 
+// プレゼントを受け取るエンドポイント
 Route::post('/presents/received/{user_id}/{present_id}', [GiftController::class, 'receivePresentById']);
