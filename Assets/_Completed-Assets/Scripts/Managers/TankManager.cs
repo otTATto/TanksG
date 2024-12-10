@@ -17,7 +17,6 @@ namespace Complete
         [HideInInspector] public string m_ColoredPlayerText;    // A string that represents the player with their number colored to match their tank.
         [HideInInspector] public GameObject m_Instance;         // A reference to the instance of the tank when it is created.
         [HideInInspector] public int m_Wins;                    // The number of wins this player has so far.
-        
 
         public TankMovement m_Movement;                        // Reference to tank's movement script, used to disable and enable control.
         public TankShooting m_Shooting;                        // Reference to tank's shooting script, used to disable and enable control.
@@ -36,7 +35,7 @@ namespace Complete
             m_Shooting.m_PlayerNumber = m_PlayerNumber;
 
             // クライアントの場合は、自分のオブジェクトかどうかを確認
-            if (NetworkManager.instance.isClient && NetworkManager.instance.GetTankId() == m_PlayerNumber)
+            if (NetworkManager.instance.isClient && NetworkManager.instance.client.playerId == m_PlayerNumber - 1)
             {
                 m_Movement.isPlayerObject = true;
                 m_Shooting.isPlayerObject = true;

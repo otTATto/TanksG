@@ -40,7 +40,6 @@ namespace Complete
             StartCoroutine (GameLoop ());
         }
 
-
         private void SpawnAllTanks()
         {
             Rigidbody[] m_Rigidbodies = new Rigidbody[m_Tanks.Length];
@@ -55,23 +54,22 @@ namespace Complete
                 m_Tanks[i].m_PlayerNumber = i + 1;
                 m_Tanks[i].Setup();
 
+                // syncDataを作成
+                NetworkDataTypes.SyncObjectData syncData = new NetworkDataTypes.SyncObjectData();
+                syncData.objectId = i;
+                syncData.objectType = (int)NetworkDataTypes.ObjectType.TANK;
+                syncData.position = m_Tanks[i].m_Instance.transform.position;
+                syncData.rotation = m_Tanks[i].m_Instance.transform.rotation;
+                NetworkManager.instance.syncObjectData.Add(syncData.objectId, syncData);
+
+                // SyncObjectをオブジェクトに追加
+                SyncObject syncObject = m_Tanks[i].m_Instance.AddComponent<SyncObject>();
+                syncObject.CopyFrom(syncData);
+                NetworkManager.instance.syncObjectIds.Add(syncData.objectId);
+
                 m_Rigidbodies[i] = m_Tanks[i].m_Instance.GetComponent<Rigidbody>();
                 m_Turrets[i] = m_Tanks[i].m_Instance.GetComponent<TankMovement>().m_Turret;
             }
-
-            // 戦車の剛体を設定
-            NetworkManager.instance.SetRigidbodies(m_Rigidbodies);
-            // 砲塔を設定
-            NetworkManager.instance.SetTurrets(m_Turrets);
-
-            // 砲弾のプレハブを設定
-            TankShooting tankShooting = m_Tanks[0].m_Instance.GetComponent<TankShooting>();
-            NetworkManager.instance.SetShell(tankShooting.m_Shell);
-            NetworkManager.instance.SetMine(tankShooting.m_MinePrefab);
-            // 砲弾・地雷のプレハブを設定
-            CartridgeSpawner spawner = GetComponent<CartridgeSpawner>();
-            NetworkManager.instance.SetCartridgePrefabs(spawner.shellCartridgePrefab, spawner.mineCartridgePrefab);
-
         }
 
 

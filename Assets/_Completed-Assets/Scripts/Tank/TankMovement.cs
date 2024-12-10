@@ -27,6 +27,7 @@ namespace Complete
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
 
         public bool isPlayerObject = false;
+        public SyncObject syncObject;
 
         private void Awake ()
         {
@@ -81,6 +82,8 @@ namespace Complete
             m_TurretTurnAxisName = "TurretTurn1";
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
+
+            syncObject = GetComponent<SyncObject>();
         }
 
         private void Update ()
@@ -145,23 +148,13 @@ namespace Complete
 
             Vector3 position = m_Rigidbody.position + movement;
 
-            // サーバに位置を送信
-            SendPosition(position);
-
             // Apply this movement to the rigidbody's position.
             m_Rigidbody.MovePosition(position);
-        }
 
-        // client method
-        private void SendPosition(Vector3 position)
-        {
-            byte[] data = new byte[14];
-            data[0] = (byte)NetworkDataTypes.DataType.TANK_POSITION;
-            data[1] = (byte)m_PlayerNumber;
-            BitConverter.GetBytes(position.x).CopyTo(data, 2);
-            BitConverter.GetBytes(position.y).CopyTo(data, 6);
-            BitConverter.GetBytes(position.z).CopyTo(data, 10);
-            NetworkManager.instance.SendFromClient(data);
+            // 移動データを更新
+            syncObject.position = position;
+            syncObject.rotation = transform.rotation;
+            // syncObject.velocity = m_Rigidbody.velocity;
         }
 
 
@@ -175,23 +168,11 @@ namespace Complete
             Quaternion turnRotation = Quaternion.Euler (0f, turn, 0f);
             Quaternion rotation = m_Rigidbody.rotation * turnRotation;
 
-            // サーバに回転を送信
-            SendRotation(rotation);
+            // 回転データを更新
+            syncObject.rotation = rotation;
 
             // Apply this rotation to the rigidbody's rotation.
             m_Rigidbody.MoveRotation(rotation);
-        }
-
-        private void SendRotation(Quaternion rotation)
-        {
-            byte[] data = new byte[18];
-            data[0] = (byte)NetworkDataTypes.DataType.TANK_ROTATION;
-            data[1] = (byte)m_PlayerNumber;
-            BitConverter.GetBytes(rotation.x).CopyTo(data, 2);
-            BitConverter.GetBytes(rotation.y).CopyTo(data, 6);
-            BitConverter.GetBytes(rotation.z).CopyTo(data, 10);
-            BitConverter.GetBytes(rotation.w).CopyTo(data, 14);
-            NetworkManager.instance.SendFromClient(data);
         }
 
         private void TurretTurn ()
@@ -201,21 +182,7 @@ namespace Complete
 
             Quaternion turretRotation = Quaternion.Euler(0f, turn, 0f);
 
-            // サーバに砲塔の回転を送信
             m_Turret.transform.Rotate(0f, turn, 0f); //回転
-            SendTurretRotation(m_Turret.transform.rotation);
-        }
-
-        private void SendTurretRotation(Quaternion rotation)
-        {
-            byte[] data = new byte[18];
-            data[0] = (byte)NetworkDataTypes.DataType.TURRET_ROTATION;
-            data[1] = (byte)m_PlayerNumber;
-            BitConverter.GetBytes(rotation.x).CopyTo(data, 2);
-            BitConverter.GetBytes(rotation.y).CopyTo(data, 6);
-            BitConverter.GetBytes(rotation.z).CopyTo(data, 10);
-            BitConverter.GetBytes(rotation.w).CopyTo(data, 14);
-            NetworkManager.instance.SendFromClient(data);
         }
     }
 }

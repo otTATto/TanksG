@@ -2,7 +2,7 @@ using UnityEngine;
 using System;
 using System.Net;
 using System.Net.Sockets;
-using Complete;
+using System.Collections.Generic;
 
 public class NetworkManager : MonoBehaviour
 {
@@ -11,8 +11,18 @@ public class NetworkManager : MonoBehaviour
     public Client client;
     public bool isServer = false;
     public bool isClient = false;
+    private float syncRate = 0.1f; // 同期間隔
+    private float syncTimer = 0f; // 同期タイマ
 
-    void Awake()
+    [SerializeField]
+    public List<GameObject> syncObjectRefs;
+
+    public Dictionary<int, NetworkDataTypes.SyncObjectData> syncObjectData;
+    public List<int> syncObjectIds;
+
+    public bool isGameStart = false;
+
+    public void Awake()
     {
         // シングルトンインスタンスを作成
         if (instance == null)
@@ -35,6 +45,9 @@ public class NetworkManager : MonoBehaviour
         {
             StartClient("127.0.0.1", 8000);
         }
+
+        syncObjectData = new Dictionary<int, NetworkDataTypes.SyncObjectData>();
+        syncObjectIds = new List<int>();
     }
 
     // server method
@@ -50,6 +63,7 @@ public class NetworkManager : MonoBehaviour
     {
         client = new Client();
         client.Connect(ipAddress, port);
+        client.Send(new byte[] { (byte)NetworkDataTypes.DataType.GET_PLAYER_ID });
     }
 
     // server method
@@ -60,7 +74,7 @@ public class NetworkManager : MonoBehaviour
             server.Send(data, clientId);
         }
     }
-
+    
     // client method
     public void SendFromClient(byte[] data)
     {
@@ -70,49 +84,61 @@ public class NetworkManager : MonoBehaviour
         }
     }
 
-    // client method
-    public int GetTankId()
+    public void Update()
     {
-        if (client != null)
+        if (!isGameStart || syncObjectData.Count == 0) return;
+
+        syncTimer += Time.deltaTime;
+        if (syncTimer >= syncRate)
         {
-            return client.tankId;
+            syncTimer = 0f;
+            SendSyncObject();
         }
-        return -1;
+
+        foreach (var key in syncObjectData.Keys)
+        {
+            if (!syncObjectIds.Contains(key))
+            {
+                RegisterSyncObject(syncObjectData[key]);
+            }
+        }
     }
 
-    public void SetRigidbodies(Rigidbody[] m_Rigidbodies)
+    private void SendSyncObject()
     {
-        if (isServer) server.m_Rigidbodies = m_Rigidbodies;
-        if (isClient) client.m_Rigidbodies = m_Rigidbodies;
+        // データを格納するバッファを作成
+        byte[] data = new byte[48 * syncObjectData.Count + 1];
+        data[0] = (byte)NetworkDataTypes.DataType.SYNC_OBJECT;
+        int offset = 1;
+
+        Debug.Log($"syncObjectData Count: {syncObjectData.Count}");
+
+        // 各SyncObjectDataをバッファにコピー
+        foreach (var syncData in syncObjectData.Values)
+        {
+            byte[] encodedData = NetworkDataTypes.EncodeSyncObjectData(syncData);
+            Debug.Log($"encodedData Length: {encodedData.Length}");
+            Buffer.BlockCopy(encodedData, 0, data, offset, encodedData.Length);
+            offset += encodedData.Length;
+        }
+
+        // データを送信
+        if (isClient) SendFromClient(data);
+        if (isServer)
+        {
+            for (int i = 0; i < server.GetClientSocketsCount(); i++)
+            {
+                SendFromServer(data, i);
+            }
+        }
     }
 
-    public void SetTurrets(GameObject[] m_Turrets)
+    private void RegisterSyncObject(NetworkDataTypes.SyncObjectData data)
     {
-        if (isServer) server.m_Turrets = m_Turrets;
-        if (isClient) client.m_Turrets = m_Turrets;
-    }
-
-    public void SetShell(Rigidbody m_Shell)
-    {
-        if (isServer) server.m_Shell = m_Shell;
-        if (isClient) client.m_Shell = m_Shell;
-    }
-
-    public void SetMine(GameObject m_Mine)
-    {
-        if (isServer) server.m_Mine = m_Mine;
-        if (isClient) client.m_Mine = m_Mine;
-    }
-
-    public void SetCartridgePrefabs(GameObject shellCartridgePrefab, GameObject mineCartridgePrefab)
-    {
-        // サーバ
-        if (isServer) server.shellCartridgePrefab = shellCartridgePrefab;
-        if (isServer) server.mineCartridgePrefab = mineCartridgePrefab;
-
-        // クライアント
-        if (isClient) client.shellCartridgePrefab = shellCartridgePrefab;
-        if (isClient) client.mineCartridgePrefab = mineCartridgePrefab;
+        GameObject obj = Instantiate(syncObjectRefs[data.objectType], data.position, data.rotation) as GameObject;
+        SyncObject newSyncObject = obj.AddComponent<SyncObject>();
+        newSyncObject.CopyFrom(data);
+        syncObjectIds.Add(data.objectId);
     }
 
     // client method (for debug)
@@ -120,7 +146,7 @@ public class NetworkManager : MonoBehaviour
     {
         if (isClient)
         {
-            GUI.Label(new Rect(10, 30, 100, 20), $"client ready: {client.isReady}, message: 0x{client.message:X}", new GUIStyle() { normal = { textColor = Color.black } });
+            GUI.Label(new Rect(10, 30, 100, 20), $"client id: {client.playerId}, message: {client.messageString}", new GUIStyle() { normal = { textColor = Color.black } });
         }
     }
 }

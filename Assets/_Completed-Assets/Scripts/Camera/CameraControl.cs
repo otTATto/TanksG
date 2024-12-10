@@ -38,20 +38,14 @@ namespace Complete
             // TODO: 通信が確率されていることを確認
             if (m_Targets.Length > 0) // 配列に要素が存在するか確認
             {
-                int tankId = NetworkManager.instance.GetTankId();
-                transform.rotation = m_Targets[tankId - 1].rotation;
-                transform.position = m_Targets[tankId - 1].TransformPoint(new Vector3(0, 2, -5));
+                int playerId = NetworkManager.instance.client.playerId;
+                transform.rotation = m_Targets[playerId].rotation;
+                transform.position = m_Targets[playerId].TransformPoint(new Vector3(0, 2, -5));
             }
             else
             {
                 Debug.LogWarning("m_Targets array is empty.");
             }
-        }
-
-        public void OnGUI()
-        {
-            if (NetworkManager.instance.isServer) return;
-            GUI.Label(new Rect(10, 80, 100, 20), $"tankId: {NetworkManager.instance.GetTankId()}", new GUIStyle() { normal = { textColor = Color.black } });
         }
     }
 }

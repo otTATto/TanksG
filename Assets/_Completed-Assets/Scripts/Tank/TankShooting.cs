@@ -154,36 +154,12 @@ namespace Complete
             // Set the shell's velocity to the launch force in the fire position's forward direction.
             shellInstance.velocity = m_CurrentLaunchForce * m_FireTransform.forward;
 
-            // サーバに砲弾の位置を送信
-            SendShellPosition(shellInstance.position, shellInstance.rotation, shellInstance.velocity);
-
             // Change the clip to the firing clip and play it.
             m_ShootingAudio.clip = m_FireClip;
             m_ShootingAudio.Play ();
 
             // Reset the launch force.  This is a precaution in case of missing button events.
             m_CurrentLaunchForce = m_MinLaunchForce;
-        }
-
-        // client method
-        private void SendShellPosition(Vector3 position, Quaternion rotation, Vector3 velocity)
-        {
-            byte[] data = new byte[41];
-            data[0] = (byte)NetworkDataTypes.DataType.SHELL_POSITION;
-            // 位置
-            BitConverter.GetBytes(position.x).CopyTo(data, 1);
-            BitConverter.GetBytes(position.y).CopyTo(data, 5);
-            BitConverter.GetBytes(position.z).CopyTo(data, 9);
-            // 回転
-            BitConverter.GetBytes(rotation.x).CopyTo(data, 13);
-            BitConverter.GetBytes(rotation.y).CopyTo(data, 17);
-            BitConverter.GetBytes(rotation.z).CopyTo(data, 21);
-            BitConverter.GetBytes(rotation.w).CopyTo(data, 25);
-            // 速度
-            BitConverter.GetBytes(velocity.x).CopyTo(data, 29);
-            BitConverter.GetBytes(velocity.y).CopyTo(data, 33);
-            BitConverter.GetBytes(velocity.z).CopyTo(data, 37);
-            NetworkManager.instance.SendFromClient(data);
         }
 
         private void StartSettingMine()
@@ -207,23 +183,9 @@ namespace Complete
             
             Instantiate(m_MinePrefab, minePosition, Quaternion.identity);
 
-            // サーバに地雷の位置を送信
-            SendMinePosition(minePosition);
-
             // タンクの移動と射撃を再度有効化
             m_IsSettingMine = false;
             GetComponent<TankMovement>().enabled = true;
-        }
-
-        // client method
-        private void SendMinePosition(Vector3 position)
-        {
-            byte[] data = new byte[13];
-            data[0] = (byte)NetworkDataTypes.DataType.MINE_POSITION;
-            BitConverter.GetBytes(position.x).CopyTo(data, 1);
-            BitConverter.GetBytes(position.y).CopyTo(data, 5);
-            BitConverter.GetBytes(position.z).CopyTo(data, 9);
-            NetworkManager.instance.SendFromClient(data);
         }
     }
 }

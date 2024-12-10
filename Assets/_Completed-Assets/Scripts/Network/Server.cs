@@ -81,7 +81,9 @@ public class Server
                 // 受信したデータを処理する
                 if (received > 0)
                 {
-                    ProcessMessage(buffer, client);
+                    UnityEngine.Debug.Log($"received: {received}");
+                    ProcessMessage(buffer[0..received], client);
+                    UnityEngine.Debug.Log($"ProcessMessage: buffer Length: {buffer.Length}");
                 }
             }
             catch (Exception e)
@@ -95,84 +97,44 @@ public class Server
 
     private void ProcessMessage(byte[] data, Socket client)
     {
-        int targetTankIndex;
-        float x, y, z;
-        float rotX, rotY, rotZ, rotW;
         switch (data[0])
         {
             case (byte)NetworkDataTypes.DataType.READY:
                 isReady[clientSockets.IndexOf(client)] = true;
+                UnityEngine.Debug.Log($"client {clientSockets.IndexOf(client)} is ready");
                 break;
-            
-            case (byte)NetworkDataTypes.DataType.TANK_POSITION:
-                SendFromServerToOthers(data, client);
-                // ターゲットのタンクの位置を更新
-                targetTankIndex = (int)data[1] - 1;
-                x = BitConverter.ToSingle(data, 2);
-                y = BitConverter.ToSingle(data, 6);
-                z = BitConverter.ToSingle(data, 10);
-                Vector3 position = new Vector3(x, y, z);
-                m_Rigidbodies[targetTankIndex].position = position;
-                break;
-            
-            case (byte)NetworkDataTypes.DataType.TANK_ROTATION:
-                SendFromServerToOthers(data, client);
-                // ターゲットのタンクの回転を更新
-                targetTankIndex = (int)data[1] - 1;
-                rotX = BitConverter.ToSingle(data, 2);
-                rotY = BitConverter.ToSingle(data, 6);
-                rotZ = BitConverter.ToSingle(data, 10);
-                rotW = BitConverter.ToSingle(data, 14);
-                Quaternion tankRotation = new Quaternion(rotX, rotY, rotZ, rotW);
-                m_Rigidbodies[targetTankIndex].transform.rotation = tankRotation;
-                break;
-            
-            case (byte)NetworkDataTypes.DataType.TURRET_ROTATION:
-                SendFromServerToOthers(data, client);
-                // ターゲットのタンクの砲塔の回転を更新
-                targetTankIndex = (int)data[1] - 1;
-                rotX = BitConverter.ToSingle(data, 2);
-                rotY = BitConverter.ToSingle(data, 6);
-                rotZ = BitConverter.ToSingle(data, 10);
-                rotW = BitConverter.ToSingle(data, 14);
-                Quaternion turretRotation = new Quaternion(rotX, rotY, rotZ, rotW);
-                m_Turrets[targetTankIndex].transform.rotation = turretRotation;
-                break;
-            
-            case (byte)NetworkDataTypes.DataType.SHELL_POSITION:
-                SendFromServerToOthers(data, client);
-                // 位置
-                x = BitConverter.ToSingle(data, 1);
-                y = BitConverter.ToSingle(data, 5);
-                z = BitConverter.ToSingle(data, 9);
-                Vector3 shellPosition = new Vector3(x, y, z);
 
-                // 回転
-                rotX = BitConverter.ToSingle(data, 13);
-                rotY = BitConverter.ToSingle(data, 17);
-                rotZ = BitConverter.ToSingle(data, 21);
-                rotW = BitConverter.ToSingle(data, 25);
-                Quaternion shellRotation = new Quaternion(rotX, rotY, rotZ, rotW);
-
-                // 速度
-                float vX = BitConverter.ToSingle(data, 29);
-                float vY = BitConverter.ToSingle(data, 33);
-                float vZ = BitConverter.ToSingle(data, 37);
-                Vector3 shellVelocity = new Vector3(vX, vY, vZ);
-
-                // 砲弾を生成
-                Rigidbody shellInstance = Object.Instantiate(m_Shell, shellPosition, shellRotation) as Rigidbody;
-                shellInstance.velocity = shellVelocity;
+            case (byte)NetworkDataTypes.DataType.GET_PLAYER_ID:
+                byte[] playerIdData = new byte[] { (byte)NetworkDataTypes.DataType.PLAYER_ID, (byte)clientSockets.IndexOf(client) };
+                Send(playerIdData, clientSockets.IndexOf(client));
+                UnityEngine.Debug.Log($"client {clientSockets.IndexOf(client)} requested player id");
                 break;
             
-            case (byte)NetworkDataTypes.DataType.MINE_POSITION:
-                SendFromServerToOthers(data, client);
-                x = BitConverter.ToSingle(data, 1);
-                y = BitConverter.ToSingle(data, 5);
-                z = BitConverter.ToSingle(data, 9);
-                Vector3 minePosition = new Vector3(x, y, z);
-                Object.Instantiate(m_Mine, minePosition, Quaternion.identity);
+            case (byte)NetworkDataTypes.DataType.SYNC_OBJECT:
+                UnityEngine.Debug.Log("sync object received. Length: " + data.Length);
+                ProcessSyncObject(data, client);
+                UnityEngine.Debug.Log($"client {clientSockets.IndexOf(client)} sent sync object");
                 break;
+        }
+    }
+
+    private void ProcessSyncObject(byte[] data, Socket client)
+    {
+        // 1バイト目はデータタイプなので、2バイト目から48バイトずつ処理
+        for (int i = 1; i < data.Length; i += 48)
+        {
+            // SyncObjectDataにデコード
+            NetworkDataTypes.SyncObjectData syncData = NetworkDataTypes.DecodeSyncObjectData(data[i..(i + 48)]);
+            
+            // keyが存在するとき
+            if (NetworkManager.instance.syncObjectData.ContainsKey(syncData.objectId))
+            {
+                NetworkManager.instance.syncObjectData[syncData.objectId] = syncData;
+            }
+            else
+            {
+                NetworkManager.instance.syncObjectData.Add(syncData.objectId, syncData);
+            }
         }
     }
 

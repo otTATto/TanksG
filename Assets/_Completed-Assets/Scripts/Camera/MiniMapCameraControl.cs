@@ -27,11 +27,11 @@ namespace Complete
             // カメラの追跡対象が存在する場合
             if (m_Targets.Length > 0)
             {
-                int tankId = NetworkManager.instance.GetTankId();
+                int playerId = NetworkManager.instance.client.playerId;
                 // カメラの位置を設定
-                transform.position = m_Targets[tankId - 1].position;
+                transform.position = m_Targets[playerId].position;
                 // カメラの向きを設定
-                transform.rotation = m_Targets[tankId - 1].rotation;
+                transform.rotation = m_Targets[playerId].rotation;
             }
             else
             {

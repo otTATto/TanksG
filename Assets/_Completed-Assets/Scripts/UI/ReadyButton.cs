@@ -26,6 +26,7 @@ public class ReadyButton : MonoBehaviour
         if (NetworkManager.instance.isClient && NetworkManager.instance.client.isReady)
         {
             NetworkManager.instance.client.isReady = false;
+            NetworkManager.instance.isGameStart = true;
             SceneManager.LoadScene(SceneNames.GameScene);
         }
         else if (NetworkManager.instance.isServer && NetworkManager.instance.server.IsReady())
@@ -33,11 +34,11 @@ public class ReadyButton : MonoBehaviour
             // サーバからクライアントに対して準備完了を通知する
             for (int i = 0; i < Server.MAX_CLIENTS; i++)
             {
-                byte message = (byte)(NetworkDataTypes.DataType.TANK_ID + NetworkDataTypes.TANK_IDs[i]);
-                Debug.Log($"send tankId: 0x{message:X}");
-                NetworkManager.instance.SendFromServer(new byte[] { message }, i);
+                NetworkManager.instance.SendFromServer(new byte[] { (byte)NetworkDataTypes.DataType.READY }, i);
             }
             Debug.Log("sent ready to all clients");
+
+            NetworkManager.instance.isGameStart = true;
 
             NetworkManager.instance.server.ResetReady();
             SceneManager.LoadScene(SceneNames.GameScene);
