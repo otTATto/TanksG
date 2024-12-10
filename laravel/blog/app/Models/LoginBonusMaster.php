@@ -11,4 +11,9 @@ class LoginBonusMaster extends Model
     protected $fillable = ['day', 'item_id', 'quantity'];
 
     public $timestamps = true;
+
+    public function item()
+    {
+        return $this->belongsTo(Item::class, 'item_id');
+    }
 }

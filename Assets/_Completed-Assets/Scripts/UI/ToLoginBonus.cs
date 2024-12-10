@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 
-public class StartButton : MonoBehaviour
+public class ToLoginBonus : MonoBehaviour
 {
     public TMP_InputField userIdInputField;  // ユーザーID入力フィールド
     public Button startButton;

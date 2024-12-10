@@ -48,3 +48,4 @@ Route::get('/login/{id}', [LoginController::class, 'login']);
 
 // ログインボーナス受取API
 Route::post('/bonus/receive/{id}', [LoginBonusController::class, 'receive']);
+Route::get('/login-bonuses', [LoginBonusController::class, 'getAllBonuses']);
