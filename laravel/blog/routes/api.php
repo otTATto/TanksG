@@ -33,7 +33,9 @@ Route::post('contact/{contact_id}/replies', [ContactController::class, 'addReply
 // アカウント停止状態を確認するエンドポイント
 Route::get('game-users/{id}/check-suspended', [GameUserController::class, 'checkSuspended']);   
 // 所有アイテム一覧を取得するエンドポイント
-Route::get('game-users/{id}/items', [GameUserController::class, 'getUserItems']);     
+Route::get('game-users/{id}/items', [GameUserController::class, 'getUserItems']);   
+// アイテムを使用するエンドポイント
+Route::delete('game-users/{userId}/items/{itemId}/use', [GameUserController::class, 'useItem']);  
 // プレゼントを送るエンドポイント          
 Route::post('/grant-item', [GiftController::class, 'grantItem']);
 // プレゼント一覧を取得するエンドポイント

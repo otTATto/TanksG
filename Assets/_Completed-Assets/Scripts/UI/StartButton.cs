@@ -13,8 +13,14 @@ public class StartButton : MonoBehaviour
 
     private void Awake()
     {
+        // スタートボタンクリック時の処理を登録
         startButton = GetComponent<Button>();
-        startButton.onClick.AddListener(OnLoginButtonClicked);
+        startButton.onClick.AddListener(() => {
+            // ログインの処理
+            OnLoginButtonClicked(); 
+            // アイテムIDをリセット
+            ItemManager.Instance.SetItemID(-1);
+        });
         warningText.gameObject.SetActive(false);  // 初期は警告を非表示
     }
 
