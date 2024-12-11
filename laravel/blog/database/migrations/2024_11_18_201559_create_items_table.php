@@ -14,11 +14,12 @@ class CreateItemsTable extends Migration
     public function up()
     {
         Schema::create('items', function (Blueprint $table) {
-            $table->id(); // アイテムID
-            $table->string('name'); // アイテム名
-            $table->timestamps(); // 作成・更新日時
+            $table->id();                   // アイテムID
+            $table->string('name');         // アイテム名
+            $table->string('description');  // アイテムの説明
+            $table->string('type');         // アイテムの種類
+            $table->timestamps();           // 作成・更新日時
         });
-
     }
 
     /**

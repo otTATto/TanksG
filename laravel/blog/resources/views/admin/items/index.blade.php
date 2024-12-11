@@ -21,6 +21,8 @@
             <tr>
                 <th>Item ID</th>
                 <th>Item Name</th>
+                <th>Item Type</th>
+                <th>Item Descriptin</th>
             </tr>
         </thead>
         <tbody>
@@ -28,6 +30,8 @@
                 <tr>
                     <td>{{ $item->id }}</td>
                     <td>{{ $item->name }}</td>
+                    <td>{{ $item->type }}</td>
+                    <td>{{ $item->description }}</td>
                 </tr>
             @endforeach
         </tbody>

@@ -45,7 +45,7 @@ class GameUserController extends Controller
         // ゲームユーザーの所有アイテム一覧を取得
         $items = UserItem::where('user_id', $id)
             ->join('items', 'user_items.item_id', '=', 'items.id')
-            ->select('items.id', 'items.name', 'user_items.quantity')
+            ->select('items.id', 'items.name', 'items.description', 'items.type', 'user_items.quantity')
             ->get();
 
         return response()->json($items);

@@ -21,7 +21,6 @@ public class ItemListController : MonoBehaviour
     public GameObject itemUseSuccessDialog;         // アイテム使用成功ダイアログ
     public TextMeshProUGUI itemNameText;            // 使用中のアイテム名
 
-    private int currentItemId;                      // 使用中のアイテムID
     private List<Item> itemList = new List<Item>(); // アイテムリスト
 
     private string apiURL = "http://localhost:8000/api/game-users/{0}/items";
@@ -29,9 +28,11 @@ public class ItemListController : MonoBehaviour
     [System.Serializable]
     public class Item
     {
-        public int id;          // アイテムID
-        public string name;     // アイテム名
-        public int quantity;    // アイテム量
+        public int id;              // アイテムID
+        public string name;         // アイテム名
+        public string description;  // アイテムの説明
+        public string type;         // アイテムのタイプ
+        public int quantity;        // アイテム量
     }
 
     private void Start()
@@ -40,13 +41,13 @@ public class ItemListController : MonoBehaviour
         LoadUserItems();
 
         // 現在使用中のアイテムIDを取得
-        currentItemId = ItemManager.Instance.CurrentItemID;
+        int currentItemId = ItemManager.Instance.CurrentItemID;
         if (currentItemId != -1)
         {
             // アイテムIDからアイテム名を取得
             string itemName = GetItemName(currentItemId);
             // 使用中のアイテム名を表示
-            itemNameText.text = ItemManager.Instance.CurrentItemID.ToString();
+            itemNameText.text = itemName;
         } else {
             itemNameText.text = "使用中のアイテムはありません";
         }
@@ -64,6 +65,34 @@ public class ItemListController : MonoBehaviour
             }
         }
         return "アイテムが見つかりません";
+    }
+
+    // アイテムIDからアイテムの説明を取得
+    public string GetItemDescription(int itemId)
+    {
+        // アイテムリストの各アイテムから，指定のアイテムIDに一致するアイテムの説明を取得
+        foreach (var item in itemList)
+        {
+            if (item.id == itemId)
+            {
+                return item.description;
+            }
+        }
+        return "アイテムの説明がありません";
+    }
+
+    // アイテムIDからアイテムのタイプを取得
+    public string GetItemType(int itemId)
+    {
+        // アイテムリストの各アイテムから，指定のアイテムIDに一致するアイテムのタイプを取得
+        foreach (var item in itemList)
+        {
+            if (item.id == itemId)
+            {
+                return item.type;
+            }
+        }
+        return "instant";
     }
     
     // ユーザーのアイテムをロードして表示
@@ -158,6 +187,21 @@ public class ItemListController : MonoBehaviour
         {
             // アイテムがない場合は，その旨をダイアログで表示
             itemCannotUseDialog.SetActive(true);
+            // 詳細を表示
+            string detailMessage = "アイテムがありません。";
+            itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
+            yield break;
+        }
+
+        // すでに使用中の場合は使用できない旨を表示
+        int currentItemId = ItemManager.Instance.CurrentItemID;
+        if (currentItemId == itemId)
+        {
+            // アイテム使用不可ダイアログを表示
+            itemCannotUseDialog.SetActive(true);
+            // 詳細を表示
+            string detailMessage = "既に効果が適用されています。";
+            itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
             yield break;
         }
 
@@ -192,16 +236,24 @@ public class ItemListController : MonoBehaviour
                 itemUseSuccessDialog.SetActive(true);
                 // アイテム名を表示
                 itemUseSuccessDialog.transform.Find("ItemNameText").GetComponent<TextMeshProUGUI>().text = GetItemName(itemId);
-                Debug.Log("Item used successfully");
+                // アイテムの説明を表示
+                itemUseSuccessDialog.transform.Find("ItemEffectText").GetComponent<TextMeshProUGUI>().text = GetItemDescription(itemId);
 
                 // アイテムリストを更新
                 LoadUserItems();
 
-                // 使用中のアイテムIDを更新
-                ItemManager.Instance.SetItemID(itemId);
+                // アイテムタイプが duration の場合のみ，使用中のアイテムIDを更新
+                if (GetItemType(itemId) == "duration")
+                {
+                    // 使用中のアイテムIDを更新
+                    ItemManager.Instance.SetItemID(itemId);
 
-                // 使用中のアイテム名を表示
-                itemNameText.text = GetItemName(itemId);
+                    // 使用中のアイテム名を表示
+                    itemNameText.text = GetItemName(itemId);
+                }
+
+                // ログ
+                Debug.Log("Item used successfully");
             }
             else
             {
