@@ -10,8 +10,10 @@ public class NetworkDataTypes
         GET_PLAYER_ID = 0x1,
         READY = 0x2,
         GAME_START = 0x3,
-        GAME_END = 0x4,
-        SYNC_OBJECT = 0x5,
+        GAME_STOP = 0x4,
+        GAME_END = 0x5,
+        SYNC_OBJECT = 0x6,
+        DESTROY_OBJECT = 0x7,
     }
 
     // オブジェクト種類の列挙型
@@ -35,38 +37,36 @@ public class NetworkDataTypes
     }
 
     // オブジェクトの同期データをエンコード (48 bytes)
-    public static byte[] EncodeSyncObjectData(SyncObjectData data)
+    public static byte[] EncodeSyncObjectData(int objectId, int objectType, Vector3 position, Quaternion rotation, Vector3 velocity)
     {
         byte[] bytes = new byte[48];
         // objectId
-        BitConverter.GetBytes(data.objectId).CopyTo(bytes, 0);
+        BitConverter.GetBytes(objectId).CopyTo(bytes, 0);
         // objectType
-        BitConverter.GetBytes(data.objectType).CopyTo(bytes, 4);
+        BitConverter.GetBytes(objectType).CopyTo(bytes, 4);
 
         // position
-        BitConverter.GetBytes(data.position.x).CopyTo(bytes, 8);
-        BitConverter.GetBytes(data.position.y).CopyTo(bytes, 12);
-        BitConverter.GetBytes(data.position.z).CopyTo(bytes, 16);
+        BitConverter.GetBytes(position.x).CopyTo(bytes, 8);
+        BitConverter.GetBytes(position.y).CopyTo(bytes, 12);
+        BitConverter.GetBytes(position.z).CopyTo(bytes, 16);
         // rotation
-        BitConverter.GetBytes(data.rotation.x).CopyTo(bytes, 20);
-        BitConverter.GetBytes(data.rotation.y).CopyTo(bytes, 24);
-        BitConverter.GetBytes(data.rotation.z).CopyTo(bytes, 28);
-        BitConverter.GetBytes(data.rotation.w).CopyTo(bytes, 32);
+        BitConverter.GetBytes(rotation.x).CopyTo(bytes, 20);
+        BitConverter.GetBytes(rotation.y).CopyTo(bytes, 24);
+        BitConverter.GetBytes(rotation.z).CopyTo(bytes, 28);
+        BitConverter.GetBytes(rotation.w).CopyTo(bytes, 32);
         // velocity
-        BitConverter.GetBytes(data.velocity.x).CopyTo(bytes, 36);
-        BitConverter.GetBytes(data.velocity.y).CopyTo(bytes, 40);
-        BitConverter.GetBytes(data.velocity.z).CopyTo(bytes, 44);
+        BitConverter.GetBytes(velocity.x).CopyTo(bytes, 36);
+        BitConverter.GetBytes(velocity.y).CopyTo(bytes, 40);
+        BitConverter.GetBytes(velocity.z).CopyTo(bytes, 44);
         return bytes;
     }
 
     // オブジェクトの同期データをデコード (48 bytes)
     public static SyncObjectData DecodeSyncObjectData(byte[] bytes)
     {
-        UnityEngine.Debug.Log($"DecodeSyncObjectData: bytes Length: {bytes.Length}");
         SyncObjectData data = new SyncObjectData();
         data.objectId = BitConverter.ToInt32(bytes, 0);
         data.objectType = BitConverter.ToInt32(bytes, 4);
-        UnityEngine.Debug.Log($"DecodeSyncObjectData: data.objectId: {data.objectId}, data.objectType: {data.objectType}");
 
         // position
         float x, y, z;
@@ -74,7 +74,6 @@ public class NetworkDataTypes
         y = BitConverter.ToSingle(bytes, 12);
         z = BitConverter.ToSingle(bytes, 16);
         data.position = new Vector3(x, y, z);
-        UnityEngine.Debug.Log($"DecodeSyncObjectData: data.position: {data.position}");
 
         // rotation
         float rx, ry, rz, rw;
@@ -83,7 +82,6 @@ public class NetworkDataTypes
         rz = BitConverter.ToSingle(bytes, 28);
         rw = BitConverter.ToSingle(bytes, 32);
         data.rotation = new Quaternion(rx, ry, rz, rw);
-        UnityEngine.Debug.Log($"DecodeSyncObjectData: data.rotation: {data.rotation}");
 
         // velocity
         float vx, vy, vz;

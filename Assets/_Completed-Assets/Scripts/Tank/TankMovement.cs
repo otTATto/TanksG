@@ -27,7 +27,6 @@ namespace Complete
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
 
         public bool isPlayerObject = false;
-        public SyncObject syncObject;
 
         private void Awake ()
         {
@@ -82,8 +81,6 @@ namespace Complete
             m_TurretTurnAxisName = "TurretTurn1";
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
-
-            syncObject = GetComponent<SyncObject>();
         }
 
         private void Update ()
@@ -130,7 +127,7 @@ namespace Complete
 
         private void FixedUpdate ()
         {
-            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            // 自分のオブジェクトかどうかを確認
             if (!isPlayerObject) return;
 
             // Adjust the rigidbodies position and orientation in FixedUpdate.
@@ -150,11 +147,6 @@ namespace Complete
 
             // Apply this movement to the rigidbody's position.
             m_Rigidbody.MovePosition(position);
-
-            // 移動データを更新
-            syncObject.position = position;
-            syncObject.rotation = transform.rotation;
-            // syncObject.velocity = m_Rigidbody.velocity;
         }
 
 
@@ -167,9 +159,6 @@ namespace Complete
             // Create a rotation in the y axis.
             Quaternion turnRotation = Quaternion.Euler (0f, turn, 0f);
             Quaternion rotation = m_Rigidbody.rotation * turnRotation;
-
-            // 回転データを更新
-            syncObject.rotation = rotation;
 
             // Apply this rotation to the rigidbody's rotation.
             m_Rigidbody.MoveRotation(rotation);

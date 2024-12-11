@@ -18,7 +18,6 @@ namespace Complete
 
         private void Awake ()
         {
-            if (NetworkManager.instance.isServer) return;
             m_Camera = GetComponentInChildren<Camera> ();
         }
 
@@ -26,8 +25,7 @@ namespace Complete
         private void FixedUpdate ()
         {
             // Move the camera towards a desired position.
-            if (NetworkManager.instance.isServer) return;
-            Move ();
+            Move();
         }
 
 
@@ -38,7 +36,7 @@ namespace Complete
             // TODO: 通信が確率されていることを確認
             if (m_Targets.Length > 0) // 配列に要素が存在するか確認
             {
-                int playerId = NetworkManager.instance.client.playerId;
+                int playerId = Client.instance.playerId;
                 transform.rotation = m_Targets[playerId].rotation;
                 transform.position = m_Targets[playerId].TransformPoint(new Vector3(0, 2, -5));
             }

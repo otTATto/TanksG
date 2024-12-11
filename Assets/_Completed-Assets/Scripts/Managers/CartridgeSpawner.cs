@@ -17,7 +17,6 @@ public class CartridgeSpawner : MonoBehaviour
 
     private void Update()
     {
-        if (!NetworkManager.instance.isServer) return;
 
         mineTimer += Time.deltaTime;
         shellTimer += Time.deltaTime;

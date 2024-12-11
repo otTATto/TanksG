@@ -49,23 +49,26 @@ namespace Complete
             for (int i = 0; i < m_Tanks.Length; i++)
             {
                 // ... create them, set their player number and references needed for control.
-                m_Tanks[i].m_Instance =
-                    Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
+                // 自分の戦車の場合
+                if (i == Client.instance.playerId)
+                {
+                    m_Tanks[i].m_Instance = Client.instance.InstantiateNetworkObject(
+                        (int)NetworkDataTypes.ObjectType.TANK,
+                        m_Tanks[i].m_SpawnPoint.position,
+                        m_Tanks[i].m_SpawnPoint.rotation
+                    );
+                }
+                // 自分の戦車でない場合
+                else
+                {
+                    m_Tanks[i].m_Instance =
+                        Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
+                    Client.instance.networkObjects.Add(i, m_Tanks[i].m_Instance);
+                    Client.instance.networkObjectTypes.Add(i, (int)NetworkDataTypes.ObjectType.TANK);
+                    Client.instance.otherNetworkObjects.Add(i);
+                }
                 m_Tanks[i].m_PlayerNumber = i + 1;
                 m_Tanks[i].Setup();
-
-                // syncDataを作成
-                NetworkDataTypes.SyncObjectData syncData = new NetworkDataTypes.SyncObjectData();
-                syncData.objectId = i;
-                syncData.objectType = (int)NetworkDataTypes.ObjectType.TANK;
-                syncData.position = m_Tanks[i].m_Instance.transform.position;
-                syncData.rotation = m_Tanks[i].m_Instance.transform.rotation;
-                NetworkManager.instance.syncObjectData.Add(syncData.objectId, syncData);
-
-                // SyncObjectをオブジェクトに追加
-                SyncObject syncObject = m_Tanks[i].m_Instance.AddComponent<SyncObject>();
-                syncObject.CopyFrom(syncData);
-                NetworkManager.instance.syncObjectIds.Add(syncData.objectId);
 
                 m_Rigidbodies[i] = m_Tanks[i].m_Instance.GetComponent<Rigidbody>();
                 m_Turrets[i] = m_Tanks[i].m_Instance.GetComponent<TankMovement>().m_Turret;
@@ -104,16 +107,7 @@ namespace Complete
             {
                 // If there is a game winner, restart the level.
                 // ゲーム終了メッセージを送信
-                if (NetworkManager.instance.isServer)
-                {
-                    for (int i = 0; i < Server.MAX_CLIENTS; i++)
-                    {
-                        byte[] data = new byte[] { (byte)NetworkDataTypes.DataType.GAME_END };
-                        NetworkManager.instance.SendFromServer(data, i);
-                    }
-                    // ゲーム終了メッセージを送信したらシーンをロード
-                    SceneManager.LoadScene(SceneNames.LobbyScene);
-                }
+                
             }
             else
             {
@@ -144,6 +138,7 @@ namespace Complete
 
         private IEnumerator RoundPlaying ()
         {
+            Client.instance.isGamePlaying = true;
             // As soon as the round begins playing let the players control the tanks.
             EnableTankControl ();
 
@@ -161,6 +156,7 @@ namespace Complete
 
         private IEnumerator RoundEnding ()
         {
+            Client.instance.isGamePlaying = false;
             for (int i = 0; i < m_Tanks.Length; i++)
             {
                 // 残弾数を0にして残弾数の表示を停止

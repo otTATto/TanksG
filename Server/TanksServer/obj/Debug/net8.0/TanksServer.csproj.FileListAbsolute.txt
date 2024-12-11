@@ -1,0 +1,15 @@
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.AssemblyInfoInputs.cache
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.AssemblyInfo.cs
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.csproj.CoreCompileInputs.cache
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.sourcelink.json
+C:\Users\mtus6\TanksG\Server\TanksServer\bin\Debug\net8.0\TanksServer.exe
+C:\Users\mtus6\TanksG\Server\TanksServer\bin\Debug\net8.0\TanksServer.deps.json
+C:\Users\mtus6\TanksG\Server\TanksServer\bin\Debug\net8.0\TanksServer.runtimeconfig.json
+C:\Users\mtus6\TanksG\Server\TanksServer\bin\Debug\net8.0\TanksServer.dll
+C:\Users\mtus6\TanksG\Server\TanksServer\bin\Debug\net8.0\TanksServer.pdb
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.dll
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\refint\TanksServer.dll
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.pdb
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\TanksServer.genruntimeconfig.cache
+C:\Users\mtus6\TanksG\Server\TanksServer\obj\Debug\net8.0\ref\TanksServer.dll

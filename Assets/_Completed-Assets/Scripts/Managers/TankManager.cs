@@ -35,7 +35,7 @@ namespace Complete
             m_Shooting.m_PlayerNumber = m_PlayerNumber;
 
             // クライアントの場合は、自分のオブジェクトかどうかを確認
-            if (NetworkManager.instance.isClient && NetworkManager.instance.client.playerId == m_PlayerNumber - 1)
+            if (Client.instance.playerId == m_PlayerNumber - 1)
             {
                 m_Movement.isPlayerObject = true;
                 m_Shooting.isPlayerObject = true;

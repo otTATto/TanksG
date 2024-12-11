@@ -68,7 +68,8 @@ namespace Complete
             Destroy (m_ExplosionParticles.gameObject, mainModule.duration);
 
             // Destroy the shell.
-            Destroy (gameObject);
+            int objectId = int.Parse(gameObject.name.Split('_')[1]);
+            Client.instance.DestroyNetworkObject(objectId);
         }
 
 
