@@ -20,6 +20,8 @@ public class ItemListController : MonoBehaviour
     public GameObject itemCannotUseDialog;          // アイテム使用不可ダイアログ
     public GameObject itemUseSuccessDialog;         // アイテム使用成功ダイアログ
     public TextMeshProUGUI itemNameText;            // 使用中のアイテム名
+    public TextMeshProUGUI itemIconText;            // 使用中のアイテムアイコンのテキスト
+    public Image itemIconImage;                     // 使用中のアイテムアイコンの画像
 
     private List<Item> itemList = new List<Item>(); // アイテムリスト
 
@@ -48,6 +50,11 @@ public class ItemListController : MonoBehaviour
             string itemName = GetItemName(currentItemId);
             // 使用中のアイテム名を表示
             itemNameText.text = itemName;
+            // 使用中のアイテムアイコンを表示
+            string iconText = itemName.Substring(0, 2);
+            itemIconText.text = iconText;
+            // 使用中のアイテムアイコンの画像を表示
+            itemIconImage.color = new Color32(59, 118, 255, 255);
         } else {
             itemNameText.text = "使用中のアイテムはありません";
         }
@@ -137,18 +144,19 @@ public class ItemListController : MonoBehaviour
             // アイテムリストを表示
             foreach (var item in itemList)
             {
-                // アイテムプレハブをインスタンス化
+                // アイテム情報プレハブをインスタンス化
                 GameObject itemInfo = Instantiate(itemInfoPrefab, itemListContent.transform);
 
                 // アイテム名を表示
                 itemInfo.transform.Find("ItemInfoCanvas/ItemNameText").GetComponent<TextMeshProUGUI>().text = item.name;
-                // ログ
-                Debug.Log($"Item Name: {item.name}");
+
+                // アイテム名の先頭2文字を取得
+                string iconText = item.name.Substring(0, 2);
+                // アイテムアイコンを表示
+                itemInfo.transform.Find("ItemInfoCanvas/ItemIconText").GetComponent<TextMeshProUGUI>().text = iconText;
 
                 // アイテム量を表示
                 itemInfo.transform.Find("ItemInfoCanvas/ItemQuantityText").GetComponent<TextMeshProUGUI>().text = item.quantity.ToString();
-                // ログ
-                Debug.Log($"Item Quantity: {item.quantity}");
 
                 // 使用ボタンを取得
                 Button useButton = itemInfo.transform.Find("ItemInfoCanvas/ItemUseButton").GetComponent<Button>();
@@ -250,6 +258,13 @@ public class ItemListController : MonoBehaviour
 
                     // 使用中のアイテム名を表示
                     itemNameText.text = GetItemName(itemId);
+
+                    // 使用中のアイテムアイコンを表示
+                    string iconText = GetItemName(itemId).Substring(0, 2);
+                    itemIconText.text = iconText;
+                    // 使用中のアイテムアイコンの画像を表示
+                    itemIconImage.color = new Color32(59, 118, 255, 255);
+
                 }
 
                 // ログ
