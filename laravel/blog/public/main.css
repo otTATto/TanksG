@@ -76,3 +76,33 @@ header nav ul li {
 header nav ul li a.active {
     color: #fff;
 }
+/* ナビ中の現在位置強調 */
+.here-text {
+    color: #ff7777;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+}
+.not-here-text {
+    color: #ffffff;
+}
+/* head タグの override */
+h1 {
+    margin-top: 20px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+}
+h2 {
+    margin-top: 20px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+}
+h3 {
+    margin-top: 20px;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 500;
+}
+/* フォント */
+body {
+    font-family: 'Zen Maru Gothic', serif;
+    font-weight: 500;
+}
