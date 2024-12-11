@@ -5,7 +5,7 @@ using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
 
-public class StartButton : MonoBehaviour
+public class ToLoginBonus : MonoBehaviour
 {
     public TMP_InputField userIdInputField;  // ユーザーID入力フィールド
     public Button startButton;
@@ -13,14 +13,8 @@ public class StartButton : MonoBehaviour
 
     private void Awake()
     {
-        // スタートボタンクリック時の処理を登録
         startButton = GetComponent<Button>();
-        startButton.onClick.AddListener(() => {
-            // ログインの処理
-            OnLoginButtonClicked(); 
-            // アイテムIDをリセット
-            ItemManager.Instance.SetItemID(-1);
-        });
+        startButton.onClick.AddListener(OnLoginButtonClicked);
         warningText.gameObject.SetActive(false);  // 初期は警告を非表示
     }
 

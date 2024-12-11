@@ -6,6 +6,9 @@ use App\Http\Controllers\Api\MyDataController;
 use App\Http\Controllers\Api\ContactController;
 use App\Http\Controllers\Api\GameUserController;
 use App\Http\Controllers\Api\GiftController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\LoginBonusController;
+
 
 
 /*
@@ -42,3 +45,9 @@ Route::post('/grant-item', [GiftController::class, 'grantItem']);
 Route::get('/presents/{user_id}', [GiftController::class, 'getUserPresents']); 
 // プレゼントを受け取るエンドポイント
 Route::post('/presents/received/{user_id}/{present_id}', [GiftController::class, 'receivePresentById']);
+// ユーザーのログインAPI
+Route::get('/login/{id}', [LoginController::class, 'login']);
+
+// ログインボーナス受取API
+Route::post('/bonus/receive/{id}', [LoginBonusController::class, 'receive']);
+Route::get('/login-bonuses', [LoginBonusController::class, 'getAllBonuses']);
