@@ -1,12 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
 
-void Main() {
-    new Server();
-    while (true){}
-}
-
-Main();
+new Server();
+while (true) {};
 
 public class Server
 {
@@ -18,8 +14,8 @@ public class Server
     private bool[] isReady = new bool[MAX_CLIENTS];
     private const float SYNC_RATE = 0.05f; // 同期するレート(20Hz)
     private Dictionary<int, byte[]> syncObjectsData = []; // object id -> syncObjectData(for client, 48bytes)
-    private Dictionary<Socket, List<byte>> receiveBuffers = new Dictionary<Socket, List<byte>>(); // 各クライアントの受信バッファ
-    private readonly object syncObjectsDataLock = new object();
+    private Dictionary<Socket, List<byte>> receiveBuffers = new(); // 各クライアントの受信バッファ
+    private readonly object lockObject = new();
 
     public Server()
     {
@@ -28,7 +24,7 @@ public class Server
         Bind(8080);
         Listen();
         Console.WriteLine("server started.");
-        SendSyncObjectData();
+        SendDataASync();
     }
 
     public void Bind(int port)
@@ -57,7 +53,7 @@ public class Server
                 
                 Console.WriteLine($"client {clientSockets.Count} connected.");
                 clientSockets.Add(client);
-                StartReceiving(client);
+                StartReceivingAsync(client);
             }
         }
         catch (Exception e)
@@ -89,12 +85,12 @@ public class Server
         }
     }
 
-    private async void StartReceiving(Socket client)
+    private async void StartReceivingAsync(Socket client)
     {
         // 受信バッファがない場合は作成
         if (!receiveBuffers.ContainsKey(client))
         {
-            receiveBuffers[client] = new List<byte>();
+            receiveBuffers[client] = [];
         }
 
         while (client != null && client.Connected)
@@ -107,7 +103,7 @@ public class Server
                 // 受信したデータを処理する
                 if (received > 0)
                 {
-                    receiveBuffers[client].AddRange(buffer[..received]);
+                    lock (lockObject) receiveBuffers[client].AddRange(buffer[..received]);
                     ProcessReceiveBuffer(client);
                 }
             }
@@ -133,7 +129,7 @@ public class Server
             if (clientBuffer.Count < messageLength + 1) return; // 完全なメッセージが受信されるまで待つ
 
             byte[] message = [.. clientBuffer.GetRange(1, messageLength)];
-            ProcessMessage(message, client);
+            lock (lockObject) ProcessMessage(message, client);
             clientBuffer.RemoveRange(0, messageLength + 1);
         }
     }
@@ -171,25 +167,20 @@ public class Server
                 break;
 
             case (byte)NetworkDataTypes.DataType.SYNC_OBJECT:
-                lock (syncObjectsDataLock)
-                {
-                    ProcessSyncObject(data);
-                }
+                ProcessSyncObject(data);
                 break;
 
             case (byte)NetworkDataTypes.DataType.DESTROY_OBJECT:
+                // サーバでidの削除を行うのみで、クライアントには送信しない
                 int objectId = BitConverter.ToInt32(data[1..5]);
-                lock (syncObjectsDataLock)
-                {
-                    syncObjectsData.Remove(objectId);
-                }
+                syncObjectsData.Remove(objectId);
                 break;
         }
     }
 
     private void ProcessSyncObject(byte[] data)
     {
-        lock (syncObjectsDataLock)
+        lock (lockObject)
         {
             // 2byte目から48bytesずつ処理
             for (int i = 1; i < data.Length; i += 48)
@@ -210,31 +201,28 @@ public class Server
         }
     }
 
-    private async void SendSyncObjectData()
+    private async void SendDataASync()
     {
         while (true)
         {
             await Task.Delay((int)(SYNC_RATE * 1000));
 
-            lock (syncObjectsDataLock)
+            // 同期データがない場合はスキップ
+            if (syncObjectsData.Count == 0) continue;
+
+            // 全てのオブジェクトの同期データを1つのバイト配列にまとめる
+            byte[] syncData = new byte[syncObjectsData.Count * 48 + 1];
+            syncData[0] = (byte)NetworkDataTypes.DataType.SYNC_OBJECT;
+            int index = 1;
+            foreach (byte[] objectData in syncObjectsData.Values)
             {
-                // 同期データがない場合はスキップ
-                if (syncObjectsData.Count == 0) continue;
-
-                // 全てのオブジェクトの同期データを1つのバイト配列にまとめる
-                byte[] syncData = new byte[syncObjectsData.Count * 48 + 1];
-                syncData[0] = (byte)NetworkDataTypes.DataType.SYNC_OBJECT;
-                int index = 1;
-                foreach (byte[] objectData in syncObjectsData.Values)
-                {
-                    objectData.CopyTo(syncData, index);
-                    index += 48;
-                }
-
-                // 全クライアントに送信
-                BroadCast(syncData);
-                Console.WriteLine("sent objects data to all clients");
+                objectData.CopyTo(syncData, index);
+                index += 48;
             }
+
+            // 全クライアントに送信
+            BroadCast(syncData);
+            Console.WriteLine("sent objects data to all clients");
         }
     }
 

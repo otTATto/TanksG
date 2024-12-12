@@ -6,7 +6,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using System.Collections.Generic;
 using UnityEngine.Assertions;
-using System.Reflection;
 
 public class Client: MonoBehaviour
 {
@@ -50,7 +49,7 @@ public class Client: MonoBehaviour
         myNetworkObjects = new List<int>();
         otherNetworkObjects = new List<int>();
 
-        Connect("127.0.0.1", 8080);
+        ConnectAsync("127.0.0.1", 8080);
     }
 
     public void Update()
@@ -64,6 +63,7 @@ public class Client: MonoBehaviour
             // 各オブジェクトの同期データを取得してデータに追加 
             foreach (var key in networkObjects.Keys)
             {
+                if (key % 3 != playerId) continue;
                 byte[] syncObjectData = NetworkDataTypes.EncodeSyncObjectData(
                     key,
                     networkObjectTypes[key],
@@ -77,7 +77,7 @@ public class Client: MonoBehaviour
         }
     }
 
-    public async void Connect(string ipAddress, int port)
+    public async void ConnectAsync(string ipAddress, int port)
     {
         try
         {
@@ -86,7 +86,7 @@ public class Client: MonoBehaviour
                 clientSocket.BeginConnect(endPoint, null, null),
                 clientSocket.EndConnect);
 
-            StartReceiving();
+            StartReceivingAsync();
         }
         catch (Exception e)
         {
@@ -105,7 +105,7 @@ public class Client: MonoBehaviour
         }
     }
 
-    private async void StartReceiving()
+    private async void StartReceivingAsync()
     {
         while (clientSocket != null && clientSocket.Connected)
         {
@@ -161,7 +161,7 @@ public class Client: MonoBehaviour
 
             case (byte)NetworkDataTypes.DataType.SYNC_OBJECT:
                 Debug.Log($"received sync object data: {data.Length}bytes");
-                lock (lockObject) ProcessSyncObject(data);
+                lock (lockObject) ProcessSyncObject(data); // データの処理は一括でロックして行う
                 break;
 
             case (byte)NetworkDataTypes.DataType.GAME_END:
@@ -175,95 +175,81 @@ public class Client: MonoBehaviour
         if (!isGamePlaying) return;
         Assert.IsTrue(data.Length % 48 == 1, "data.Length is not 48n+1");
 
-        lock (lockObject)
+        // 1バイト目はデータタイプなので、2バイト目から48バイトずつ処理
+        for (int i = 1; i < data.Length; i += 48)
         {
-            // 1バイト目はデータタイプなので、2バイト目から48バイトずつ処理
-            for (int i = 1; i < data.Length; i += 48)
+            NetworkDataTypes.SyncObjectData syncObjectData = NetworkDataTypes.DecodeSyncObjectData(data[i..(i + 48)]);
+            if (myNetworkObjects.Contains(syncObjectData.objectId))
             {
-                NetworkDataTypes.SyncObjectData syncObjectData = NetworkDataTypes.DecodeSyncObjectData(data[i..(i + 48)]);
-                if (myNetworkObjects.Contains(syncObjectData.objectId))
-                {
-                    continue;
-                }
-                else if (otherNetworkObjects.Contains(syncObjectData.objectId))
-                {
-                    if (syncObjectData.objectType == (int)NetworkDataTypes.ObjectType.SHELL) return;
+                continue;
+            }
+            else if (otherNetworkObjects.Contains(syncObjectData.objectId))
+            {
+                if (syncObjectData.objectType == (int)NetworkDataTypes.ObjectType.SHELL) continue;
 
-                    networkObjects[syncObjectData.objectId].transform.position = syncObjectData.position;
-                    networkObjects[syncObjectData.objectId].transform.rotation = syncObjectData.rotation;
-                }
-                else
-                {
-                    // 登録されていないオブジェクトは生成
-                    InstantiateNetworkObject(syncObjectData);
-                }
+                networkObjects[syncObjectData.objectId].transform.position = syncObjectData.position;
+                networkObjects[syncObjectData.objectId].transform.rotation = syncObjectData.rotation;
+            }
+            else
+            {
+                // 登録されていないオブジェクトは生成
+                InstantiateNetworkObject(syncObjectData);
             }
         }
     }
 
     // 所有権を持たないオブジェクトを生成
     public GameObject InstantiateNetworkObject(NetworkDataTypes.SyncObjectData syncObjectData) {
-        lock (lockObject)
+        GameObject networkObjectPrefab = networkObjectPrefabs[syncObjectData.objectType];
+        GameObject networkObject = Instantiate(networkObjectPrefab, syncObjectData.position, syncObjectData.rotation);
+        networkObject.name = $"{networkObjectPrefab.name}_{syncObjectData.objectId}"; // オブジェクトIDをオブジェクトに設定
+        networkObjects.Add(syncObjectData.objectId, networkObject);
+        networkObjectTypes.Add(syncObjectData.objectId, syncObjectData.objectType);
+        otherNetworkObjects.Add(syncObjectData.objectId);
+
+        if (syncObjectData.objectType == (int)NetworkDataTypes.ObjectType.SHELL)
         {
-            GameObject networkObjectPrefab = networkObjectPrefabs[syncObjectData.objectType];
-            GameObject networkObject = Instantiate(networkObjectPrefab, syncObjectData.position, syncObjectData.rotation);
-            networkObject.name = $"{networkObjectPrefab.name}_{syncObjectData.objectId}"; // オブジェクトIDをオブジェクトに設定
-            networkObjects.Add(syncObjectData.objectId, networkObject);
-            networkObjectTypes.Add(syncObjectData.objectId, syncObjectData.objectType);
-            otherNetworkObjects.Add(syncObjectData.objectId);
-
-            if (syncObjectData.objectType == (int)NetworkDataTypes.ObjectType.SHELL)
-            {
-                networkObject.GetComponent<Rigidbody>().velocity = syncObjectData.velocity;
-            }
-
-            Debug.Log($"instantiate other network object: {syncObjectData.objectId}, {syncObjectData.objectType}");
-            return networkObject;
+            networkObject.GetComponent<Rigidbody>().velocity = syncObjectData.velocity;
         }
+
+        Debug.Log($"instantiate other network object: {syncObjectData.objectId}, {syncObjectData.objectType}");
+        return networkObject;
     }
 
     // 所有権を持つオブジェクトを生成
     public GameObject InstantiateNetworkObject(int objectType, Vector3 position, Quaternion rotation) {
-        lock (lockObject)
-        {
-            GameObject networkObjectPrefab = networkObjectPrefabs[objectType];
-            GameObject networkObject = Instantiate(networkObjectPrefab, position, rotation);
-            // 非同期的にオブジェクトを生成しても他のネットワークノードのオブジェクトIDが重複しないようにする
-            int objectId = myNetworkObjects.Count * 3 + playerId;
-            networkObject.name = $"{networkObjectPrefab.name}_{objectId}"; // オブジェクトIDをオブジェクトに設定
-            networkObjects.Add(objectId, networkObject);
-            networkObjectTypes.Add(objectId, objectType);
-            myNetworkObjects.Add(objectId);
+        GameObject networkObjectPrefab = networkObjectPrefabs[objectType];
+        GameObject networkObject = Instantiate(networkObjectPrefab, position, rotation);
+        // 非同期的にオブジェクトを生成しても他のネットワークノードのオブジェクトIDが重複しないようにする
+        int objectId = myNetworkObjects.Count * 3 + playerId;
+        networkObject.name = $"{networkObjectPrefab.name}_{objectId}"; // オブジェクトIDをオブジェクトに設定
+        networkObjects.Add(objectId, networkObject);
+        networkObjectTypes.Add(objectId, objectType);
+        myNetworkObjects.Add(objectId);
 
-            Debug.Log($"instantiate my network object: {objectId}, {objectType}");
-            return networkObject;
-        }
+        Debug.Log($"instantiate my network object: {objectId}, {objectType}");
+        return networkObject;
     }
 
     public void DestroyNetworkObject(int objectId)
     {
-        lock (lockObject)
+        // オブジェクトの削除は各クライアントで行う
+        Destroy(networkObjects[objectId]);
+        networkObjects.Remove(objectId);
+        networkObjectTypes.Remove(objectId);
+        // 自分が所有するオブジェクトの場合はサーバに削除を通知
+        if (myNetworkObjects.Contains(objectId))
         {
-            networkObjects.Remove(objectId);
-            networkObjectTypes.Remove(objectId);
-            // 自分が所有するオブジェクトの場合はサーバに削除を通知
-            if (myNetworkObjects.Contains(objectId))
-            {
-                myNetworkObjects.Remove(objectId);
-                List<byte> destroyObjectData = new() {(byte)NetworkDataTypes.DataType.DESTROY_OBJECT};
-                destroyObjectData.AddRange(BitConverter.GetBytes(objectId));
-                Send(destroyObjectData.ToArray());
-                return;
-            }
-            else if (otherNetworkObjects.Contains(objectId))
-            {
-                otherNetworkObjects.Remove(objectId);
-                return;
-            }
-            else
-            {
-                Debug.LogError($"destroy network object: {objectId} not found");
-            }
+            myNetworkObjects.Remove(objectId);
+            List<byte> destroyObjectData = new() {(byte)NetworkDataTypes.DataType.DESTROY_OBJECT};
+            destroyObjectData.AddRange(BitConverter.GetBytes(objectId));
+            Send(destroyObjectData.ToArray());
+            return;
+        }
+        else if (otherNetworkObjects.Contains(objectId))
+        {
+            otherNetworkObjects.Remove(objectId);
+            return;
         }
     }
 }

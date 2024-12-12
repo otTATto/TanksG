@@ -1,5 +1,3 @@
-using System;
-
 public class NetworkDataTypes
 {
     // データ種類の列挙型

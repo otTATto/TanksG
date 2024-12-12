@@ -1,8 +1,7 @@
 using System.Collections;
-using UnityEngine;
 using System;
 
-public class CartridgeSpawner : MonoBehaviour
+public class CartridgeSpawner
 {
     public GameObject shellCartridgePrefab;
     public GameObject mineCartridgePrefab;

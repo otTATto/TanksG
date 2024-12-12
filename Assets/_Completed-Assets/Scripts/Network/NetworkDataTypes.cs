@@ -64,7 +64,7 @@ public class NetworkDataTypes
     // オブジェクトの同期データをデコード (48 bytes)
     public static SyncObjectData DecodeSyncObjectData(byte[] bytes)
     {
-        SyncObjectData data = new SyncObjectData();
+        SyncObjectData data = new();
         data.objectId = BitConverter.ToInt32(bytes, 0);
         data.objectType = BitConverter.ToInt32(bytes, 4);
 

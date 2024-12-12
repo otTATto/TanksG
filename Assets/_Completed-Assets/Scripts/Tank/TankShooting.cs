@@ -184,7 +184,11 @@ namespace Complete
                 transform.position.z
             );
             
-            Instantiate(m_MinePrefab, minePosition, Quaternion.identity);
+            Client.instance.InstantiateNetworkObject(
+                (int)NetworkDataTypes.ObjectType.MINE,
+                minePosition,
+                Quaternion.identity
+            );
 
             // タンクの移動と射撃を再度有効化
             m_IsSettingMine = false;
