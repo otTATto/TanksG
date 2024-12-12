@@ -1,57 +1,40 @@
-using System.Collections;
-using System;
-
 public class CartridgeSpawner
 {
-    public GameObject shellCartridgePrefab;
-    public GameObject mineCartridgePrefab;
     public float shellSpawnInterval = 5f;
     public float mineSpawnInterval = 15f;
     public float spawnAreaWidth = 40f;
     public float spawnAreaHeight = 40f;
     public float heightOffset = 1f;
 
-    private float mineTimer;
-    private float shellTimer;
+    // private void SpawnShellCartridge()
+    // {
+    //     Vector3 randomPosition = new Vector3(
+    //         UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
+    //         heightOffset,
+    //         UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
+    //     );
+    // }
 
-    private void Update()
+    public byte[] SpawnShellCartridge()
     {
-
-        mineTimer += Time.deltaTime;
-        shellTimer += Time.deltaTime;
-        
-        if (shellTimer >= shellSpawnInterval)
-        {
-            SpawnShellCartridge();
-            shellTimer = 0f;
-        }
-
-        if (mineTimer >= mineSpawnInterval)
-        {
-            SpawnMineCartridge();
-            mineTimer = 0f;
-        }
+        byte[] data = new byte[48];
+        return data;
     }
 
-    private void SpawnShellCartridge()
+    // private void SpawnMineCartridge()
+    // {
+    //     Vector3 randomPosition = new(
+    //         UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
+    //         heightOffset,
+    //         UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
+    //     );
+
+    //     Instantiate(mineCartridgePrefab, randomPosition, Quaternion.identity);
+    // }
+
+    public byte[] SpawnMineCartridge()
     {
-        Vector3 randomPosition = new Vector3(
-            UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
-            heightOffset,
-            UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
-        );
-
-        Instantiate(shellCartridgePrefab, randomPosition, Quaternion.identity);
-    }
-
-    private void SpawnMineCartridge()
-    {
-        Vector3 randomPosition = new(
-            UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
-            heightOffset,
-            UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
-        );
-
-        Instantiate(mineCartridgePrefab, randomPosition, Quaternion.identity);
+        byte[] data = new byte[48];
+        return data;
     }
 }
