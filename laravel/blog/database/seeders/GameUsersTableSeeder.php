@@ -15,9 +15,24 @@ class GameUsersTableSeeder extends Seeder
     {
         // ゲームユーザーのマスターデータ
         $gameUsers = [
-            ['id' => 1, 'name' => 'Alice', 'is_suspended' => 0],
-            ['id' => 2, 'name' => 'Bob', 'is_suspended' => 0],
-            ['id' => 3, 'name' => 'Charlie', 'is_suspended' => 0],
+            [
+                'id' => 1, 
+                'name' => 'Alice', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 2, 
+                'name' => 'Bob', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 3, 
+                'name' => 'Charlie', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
         ];
 
         // マスターデータを登録

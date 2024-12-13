@@ -30,6 +30,90 @@ class GameUserController extends Controller
     }
 
     /**
+     * ゲームユーザーのスタミナを取得
+     * 
+     * @param  int  $id  ゲームユーザーID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getStamina($id)
+    {
+        // ゲームユーザーをIDで検索
+        $gameUser = GameUser::find($id);
+
+        // ユーザーが見つからない場合は404エラー
+        if (!$gameUser) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // 現在のスタミナを返す
+        return response()->json($gameUser->stamina);
+    }
+
+    /**
+     * ゲームユーザーのスタミナを回復
+     * 
+     * @param  int  $id  ゲームユーザーID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function recoverStamina($id)
+    {
+        // ゲームユーザーをIDで検索
+        $gameUser = GameUser::find($id);
+
+        // ユーザーが見つからない場合は404エラー
+        if (!$gameUser) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // スタミナが最大値の場合は回復しない
+        if ($gameUser->stamina === 5) {
+            // 現在のスタミナを返す
+            return response()->json($gameUser->stamina);
+        }
+
+        // スタミナをインクリメント
+        $gameUser->stamina += 1;
+
+        // 変更をデータベースに保存
+        $gameUser->save();
+
+        // 現在のスタミナを返す
+        return response()->json($gameUser->stamina);
+    }
+
+    /**
+     * ゲームユーザーのスタミナを消費
+     * 
+     * @param  int  $id  ゲームユーザーID
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function consumeStamina($id)
+    {
+        // ゲームユーザーをIDで検索
+        $gameUser = GameUser::find($id);
+
+        // ユーザーが見つからない場合は404エラー
+        if (!$gameUser) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        // スタミナが0の場合はデクリメントしない
+        if ($gameUser->stamina === 0) {
+            // 現在のスタミナを返す
+            return response()->json($gameUser->stamina);
+        }
+
+        // スタミナをデクリメント
+        $gameUser->stamina -= 1;
+
+        // 変更をデータベースに保存
+        $gameUser->save();
+
+        // 現在のスタミナを返す
+        return response()->json($gameUser->stamina);
+    }
+
+    /**
      * ゲームユーザーの所有アイテム一覧（アイテム名・量）を取得
      */
     public function getUserItems($id)

@@ -22,10 +22,15 @@ public class ItemListController : MonoBehaviour
     public TextMeshProUGUI itemNameText;            // 使用中のアイテム名
     public TextMeshProUGUI itemIconText;            // 使用中のアイテムアイコンのテキスト
     public Image itemIconImage;                     // 使用中のアイテムアイコンの画像
+    public GameObject staminaArea;                  // スタミナ表示エリア
 
     private List<Item> itemList = new List<Item>(); // アイテムリスト
+    private int currentStamina;                     // 現在のスタミナ
 
-    private string apiURL = "http://localhost:8000/api/game-users/{0}/items";
+    // API URL
+    private string gameUserItemApiURL = "http://localhost:8000/api/game-users/{0}/items";
+    private string gameUserItemUseApiURL = "http://localhost:8000/api/game-users/{0}/items/{1}/use";
+    private string gameUserStaminaApiURL = "http://localhost:8000/api/game-users/{0}/stamina";
 
     [System.Serializable]
     public class Item
@@ -58,6 +63,9 @@ public class ItemListController : MonoBehaviour
         } else {
             itemNameText.text = "使用中のアイテムはありません";
         }
+
+        // スタミナを取得してから表示
+        StartCoroutine(GetStaminaAndShow());
     }
 
     // アイテムIDからアイテム名を取得
@@ -117,7 +125,7 @@ public class ItemListController : MonoBehaviour
     private IEnumerator GetUserItems(int userId)
     {
         // APIのURLを作成
-        string url = string.Format(apiURL, userId);
+        string url = string.Format(gameUserItemApiURL, userId);
         UnityWebRequest request = UnityWebRequest.Get(url);
 
         // リクエストを送信
@@ -213,6 +221,18 @@ public class ItemListController : MonoBehaviour
             yield break;
         }
 
+        // スタミナがMAXの場合は使用できない旨を表示
+        StartCoroutine(GetStamina());   // スタミナを取得
+        if (currentStamina >= 5)
+        {
+            // アイテム使用不可ダイアログを表示
+            itemCannotUseDialog.SetActive(true);
+            // 詳細を表示
+            string detailMessage = "スタミナはこれ以上回復できません。";
+            itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
+            yield break;
+        }
+
         // アイテムを使用する
         yield return StartCoroutine(UseItem(itemId));
 
@@ -227,8 +247,7 @@ public class ItemListController : MonoBehaviour
         int userId = UserManager.Instance.CurrentUserID;
 
         // APIのURLを作成
-        string itemUseApiURL = "http://localhost:8000/api/game-users/{0}/items/{1}/use";
-        string url = string.Format(itemUseApiURL, userId, itemId);
+        string url = string.Format(gameUserItemUseApiURL, userId, itemId);
         Debug.Log($"Use Item URL: {url}");
         UnityWebRequest request = UnityWebRequest.Delete(url);
 
@@ -264,8 +283,10 @@ public class ItemListController : MonoBehaviour
                     itemIconText.text = iconText;
                     // 使用中のアイテムアイコンの画像を表示
                     itemIconImage.color = new Color32(59, 118, 255, 255);
-
                 }
+
+                // アイテムに応じて効果を発動
+                ApplyItemEffect(itemId);
 
                 // ログ
                 Debug.Log("Item used successfully");
@@ -289,5 +310,112 @@ public class ItemListController : MonoBehaviour
         {
             Destroy(child.gameObject);
         }
+    }
+
+    // アイテムに応じて効果を発動
+    private void ApplyItemEffect(int itemId)
+    {
+        // アイテムIDに応じて効果を発動
+        switch (itemId)
+        {
+            case 1:
+                // スタミナを回復してから表示
+                StartCoroutine(RecoverStaminaAndShow());
+                break;
+            case 2:
+                // 装甲を強化
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    // スタミナを取得してから表示するコルーチン
+    private IEnumerator GetStaminaAndShow()
+    {
+        yield return StartCoroutine(GetStamina());
+        ShowStamina();
+    }
+
+    // スタミナを回復してから表示するコルーチン
+    private IEnumerator RecoverStaminaAndShow()
+    {
+        yield return StartCoroutine(RecoverStamina());
+        ShowStamina();
+    }
+
+    // スタミナを取得
+    private IEnumerator GetStamina()
+    {
+        // api URL
+        int userId = UserManager.Instance.CurrentUserID;
+        string apiURL = gameUserStaminaApiURL + "/get";
+        string url = string.Format(apiURL, userId);
+
+        // リクエストを送信
+        UnityWebRequest request = UnityWebRequest.Get(url);
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            // JSONのレスポンスを処理
+            string jsonResponse = request.downloadHandler.text;
+            Debug.Log($"JSON Response: {jsonResponse}"); // JSONレスポンスをデバッグログに出力
+
+            // スタミナを取得
+            currentStamina = JsonConvert.DeserializeObject<int>(jsonResponse);
+            Debug.Log($"Current Stamina: {currentStamina}");
+        }
+        else
+        {
+            Debug.LogError($"API Error: {request.error}");
+        }
+    }
+
+    // スタミナを回復
+    private IEnumerator RecoverStamina()
+    {
+        // api URL
+        int userId = UserManager.Instance.CurrentUserID;
+        string apiURL = gameUserStaminaApiURL + "/recover";
+        string url = string.Format(apiURL, userId);
+
+        // リクエストを送信
+        UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
+        yield return request.SendWebRequest();
+
+        if (request.result == UnityWebRequest.Result.Success)
+        {
+            // JSONのレスポンスを処理
+            string jsonResponse = request.downloadHandler.text;
+            Debug.Log($"JSON Response: {jsonResponse}"); // JSONレスポンスをデバッグログに出力
+
+            // スタミナを取得
+            currentStamina = JsonConvert.DeserializeObject<int>(jsonResponse);
+            Debug.Log($"Current Stamina: {currentStamina}");
+        }
+        else
+        {
+            Debug.LogError($"API Error: {request.error}");
+        }
+    }
+
+    // スタミナを表示
+    private void ShowStamina()
+    {
+        // スタミナありの表示形式
+        string staminaText = "●";   // 「●」を有効なスタミナの記号として使用
+        // スタミナの数だけ塗りつぶす
+        for (int i = 1; i <= currentStamina; i++)
+        {
+            string num = i.ToString("D2");
+            Debug.Log($"StaminaBall_{num}");
+            staminaArea.transform.Find($"StaminaBall_{num}").GetComponent<TextMeshProUGUI>().text = staminaText;
+            staminaArea.transform.Find($"StaminaBall_{num}").GetComponent<TextMeshProUGUI>().color = new Color32(253, 85, 85, 255);
+
+        }
+        // ログ
+        Debug.Log($"Show Stamina: {currentStamina}");
     }
 }

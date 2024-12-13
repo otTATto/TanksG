@@ -14,10 +14,11 @@ class CreateGameUsersTable extends Migration // クラス名も変更
     public function up()
     {
         Schema::create('game_users', function (Blueprint $table) { // テーブル名を複数形に変更
-            $table->id(); // ユーザーID
+            $table->id();           // ユーザーID
             $table->string('name'); // ユーザー名
-            $table->boolean('is_suspended')->default(false); // アカウント停止情報
-            $table->timestamps(); // 作成日時・更新日時
+            $table->boolean('is_suspended')->default(false);    // アカウント停止情報
+            $table->integer('stamina')->default(3);             // スタミナ
+            $table->timestamps();   // 作成日時・更新日時
         });
     }
 
