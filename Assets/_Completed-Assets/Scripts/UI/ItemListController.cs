@@ -13,6 +13,7 @@ using System.Collections;
 public class ItemListController : MonoBehaviour
 {
     public GameObject itemInfoPrefab;               // アイテムのPrefab
+    public Button itemListButton;                   // アイテムリストボタン
     public GameObject itemListContent;              // アイテムリストの親オブジェクト
     public TextMeshProUGUI emptyMessageArea;        // アイテムがない場合に表示するメッセージ
     public GameObject itemUseDialog;                // アイテム使用ダイアログ
@@ -66,6 +67,13 @@ public class ItemListController : MonoBehaviour
 
         // スタミナを取得してから表示
         StartCoroutine(GetStaminaAndShow());
+    }
+
+    // アイテムリストボタンがクリックされたときの処理
+    public void OnItemListButtonClick()
+    {
+        // アイテムリストをロードして表示
+        LoadUserItems();
     }
 
     // アイテムIDからアイテム名を取得
