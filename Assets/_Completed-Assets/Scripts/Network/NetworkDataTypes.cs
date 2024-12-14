@@ -39,26 +39,27 @@ public class NetworkDataTypes
     // オブジェクトの同期データをエンコード (48 bytes)
     public static byte[] EncodeSyncObjectData(int objectId, int objectType, Vector3 position, Quaternion rotation, Vector3 velocity)
     {
-        byte[] bytes = new byte[48];
+        byte[] data = new byte[Client.OBJECT_DATA_SIZE];
         // objectId
-        BitConverter.GetBytes(objectId).CopyTo(bytes, 0);
+        BitConverter.GetBytes(objectId).CopyTo(data, 0);
         // objectType
-        BitConverter.GetBytes(objectType).CopyTo(bytes, 4);
+        BitConverter.GetBytes(objectType).CopyTo(data, 4);
 
         // position
-        BitConverter.GetBytes(position.x).CopyTo(bytes, 8);
-        BitConverter.GetBytes(position.y).CopyTo(bytes, 12);
-        BitConverter.GetBytes(position.z).CopyTo(bytes, 16);
+        BitConverter.GetBytes(position.x).CopyTo(data, 8);
+        BitConverter.GetBytes(position.y).CopyTo(data, 12);
+        BitConverter.GetBytes(position.z).CopyTo(data, 16);
         // rotation
-        BitConverter.GetBytes(rotation.x).CopyTo(bytes, 20);
-        BitConverter.GetBytes(rotation.y).CopyTo(bytes, 24);
-        BitConverter.GetBytes(rotation.z).CopyTo(bytes, 28);
-        BitConverter.GetBytes(rotation.w).CopyTo(bytes, 32);
+        BitConverter.GetBytes(rotation.x).CopyTo(data, 20);
+        BitConverter.GetBytes(rotation.y).CopyTo(data, 24);
+        BitConverter.GetBytes(rotation.z).CopyTo(data, 28);
+        BitConverter.GetBytes(rotation.w).CopyTo(data, 32);
+
         // velocity
-        BitConverter.GetBytes(velocity.x).CopyTo(bytes, 36);
-        BitConverter.GetBytes(velocity.y).CopyTo(bytes, 40);
-        BitConverter.GetBytes(velocity.z).CopyTo(bytes, 44);
-        return bytes;
+        BitConverter.GetBytes(velocity.x).CopyTo(data, 36);
+        BitConverter.GetBytes(velocity.y).CopyTo(data, 40);
+        BitConverter.GetBytes(velocity.z).CopyTo(data, 44);
+        return data;
     }
 
     // オブジェクトの同期データをデコード (48 bytes)

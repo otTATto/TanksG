@@ -65,7 +65,8 @@ namespace Complete
 
             ParticleSystem.MainModule mainModule = m_ExplosionParticles.main;
             Destroy(m_ExplosionParticles.gameObject, mainModule.duration);
-            Destroy(gameObject);
+            int objectId = int.Parse(gameObject.name.Split('_')[1]);
+            Client.instance.DestroyNetworkObject(objectId);
         }
 
         private float CalculateDamage(Vector3 targetPosition)
@@ -75,7 +76,7 @@ namespace Complete
             if (explosionDistance > m_ExplosionRadius) return 0;
 
             float relativeDistance = explosionDistance / m_ExplosionRadius; // [0,1]に収める
-            float damage = m_MaxDamage * Mathf.Exp(-relativeDistance);
+            float damage = m_MaxDamage * (1 - relativeDistance);
             return damage;
         }
     }

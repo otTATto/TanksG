@@ -13,10 +13,13 @@ public class Server
     public const int MAX_CLIENTS = 2;
     private bool[] isReady = new bool[MAX_CLIENTS];
     private const float SYNC_RATE = 0.05f; // 同期するレート(20Hz)
+    public static readonly int OBJECT_DATA_SIZE = 48; // オブジェクトデータのサイズ
     private Dictionary<int, byte[]> syncObjectsData = []; // object id -> syncObjectData(for client, 48bytes)
-    private Dictionary<Socket, List<byte>> receiveBuffers = new(); // 各クライアントの受信バッファ
+    private Dictionary<Socket, List<byte>> receiveBuffers = []; // 各クライアントの受信バッファ
     private readonly object lockObject = new();
-
+    private Random rnd = new();
+    private const int liefTime = 20;
+    public const int MAX_NETWORK_OBJECTS = 20; // パケットあたりに収容できるネットワークオブジェクトの最大数
     public Server()
     {
         serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -66,18 +69,18 @@ public class Server
     {
         if (clientSockets[clientId] != null && clientSockets[clientId].Connected)
         {
-            byte[] sendData = new byte[data.Length + 1];
-            sendData[0] = (byte)data.Length;
-            data.CopyTo(sendData, 1);
+            byte[] sendData = new byte[data.Length + 4];
+            BitConverter.GetBytes(data.Length).CopyTo(sendData, 0);
+            data.CopyTo(sendData, 4);
             clientSockets[clientId].Send(sendData);
         }
     }
 
     public void BroadCast(byte[] data)
     {
-        byte[] sendData = new byte[data.Length + 1];
-        sendData[0] = (byte)data.Length;
-        data.CopyTo(sendData, 1);
+        byte[] sendData = new byte[data.Length + 4];
+        BitConverter.GetBytes(data.Length).CopyTo(sendData, 0);
+        data.CopyTo(sendData, 4);
 
         foreach (var client in clientSockets)
         {
@@ -123,14 +126,14 @@ public class Server
 
         while (clientBuffer.Count > 0)
         {
-            if (clientBuffer.Count < 1) return; // データタイプを含む最小サイズを確認
+            if (clientBuffer.Count < 4) return; // データタイプを含む最小サイズを確認
 
-            int messageLength = clientBuffer[0]; // メッセージの長さを取得
-            if (clientBuffer.Count < messageLength + 1) return; // 完全なメッセージが受信されるまで待つ
+            int messageLength = BitConverter.ToInt32(clientBuffer.GetRange(0, 4).ToArray()); // メッセージの長さを取得
+            if (clientBuffer.Count < messageLength + 4) return; // 完全なメッセージが受信されるまで待つ
 
-            byte[] message = [.. clientBuffer.GetRange(1, messageLength)];
+            byte[] message = [.. clientBuffer.GetRange(4, messageLength)];
             lock (lockObject) ProcessMessage(message, client);
-            clientBuffer.RemoveRange(0, messageLength + 1);
+            clientBuffer.RemoveRange(0, messageLength + 4);
         }
     }
 
@@ -146,7 +149,6 @@ public class Server
                 if (IsReady())
                 {
                     BroadCast(data);
-                    ResetReady();
                     Console.WriteLine("sent Ready to all clients");
                 }
                 break;
@@ -161,7 +163,6 @@ public class Server
                 if (IsReady())
                 {
                     BroadCast([(byte)NetworkDataTypes.DataType.READY]);
-                    ResetReady();
                     Console.WriteLine("sent Ready to all clients");
                 }
                 break;
@@ -182,47 +183,98 @@ public class Server
     {
         lock (lockObject)
         {
-            // 2byte目から48bytesずつ処理
-            for (int i = 1; i < data.Length; i += 48)
+            // 2byte目から36bytesずつ処理
+            for (int i = 1; i < data.Length; i += OBJECT_DATA_SIZE)
             {
                 int objectId = BitConverter.ToInt32(data[i..(i + 4)]);
 
                 // objectIdがsyncObjectsDataに存在する場合はそのデータを書き換え
                 if (syncObjectsData.ContainsKey(objectId))
                 {
-                    syncObjectsData[objectId] = data[i..(i + 48)];
+                    syncObjectsData[objectId] = data[i..(i + OBJECT_DATA_SIZE)];
                 }
                 // objectIdがsyncObjectsDataに存在しない場合はデータに追加
                 else
                 {
-                    syncObjectsData.Add(objectId, data[i..(i + 48)]);
+                    syncObjectsData.Add(objectId, data[i..(i + OBJECT_DATA_SIZE)]);
                 }
             }
         }
+    }
+
+    private async void AddMineCartridgeAsync()
+    {
+        byte[] mcData = await CartridgeSpawner.SpawnMineCartridgeAsync(syncObjectsData.Count * 3 + 2, rnd);
+        int objectId;
+
+        lock (lockObject)
+        {
+            objectId = syncObjectsData.Count * 3 + 2;
+            BitConverter.GetBytes(objectId).CopyTo(mcData, 0);
+            syncObjectsData.Add(objectId, mcData);
+        }
+        await Task.Delay(liefTime * 1000);
+        lock (lockObject) syncObjectsData.Remove(objectId);
+    }
+
+    private async void AddShellCartridgeAsync()
+    {
+        byte[] scData = await CartridgeSpawner.SpawnShellCartridgeAsync(syncObjectsData.Count * 3 + 2, rnd);
+        int objectId;
+
+        lock (lockObject)
+        {
+            objectId = syncObjectsData.Count * 3 + 2;
+            BitConverter.GetBytes(objectId).CopyTo(scData, 0);
+            syncObjectsData.Add(objectId, scData);
+        }
+        await Task.Delay(liefTime * 1000);
+        lock (lockObject) syncObjectsData.Remove(objectId);
     }
 
     private async void SendDataASync()
     {
         while (true)
         {
+            // 同期データがない場合はスキップ
+            if (!IsReady()) continue;
+            
+            // 以下２つの処理は非同期で実行
+            // AddMineCartridgeAsync();
+            // AddShellCartridgeAsync();
+
             await Task.Delay((int)(SYNC_RATE * 1000));
 
-            // 同期データがない場合はスキップ
-            if (syncObjectsData.Count == 0) continue;
-
             // 全てのオブジェクトの同期データを1つのバイト配列にまとめる
-            byte[] syncData = new byte[syncObjectsData.Count * 48 + 1];
-            syncData[0] = (byte)NetworkDataTypes.DataType.SYNC_OBJECT;
-            int index = 1;
-            foreach (byte[] objectData in syncObjectsData.Values)
-            {
-                objectData.CopyTo(syncData, index);
-                index += 48;
+            lock (lockObject){
+                List<byte> syncData = [];
+                syncData.Add((byte)NetworkDataTypes.DataType.SYNC_OBJECT);
+                int item_count = 1;
+                foreach (byte[] objectData in syncObjectsData.Values)
+                {
+                    if (objectData.Length != OBJECT_DATA_SIZE) Console.WriteLine("object data size is not 36!");
+                    syncData.AddRange(objectData);
+                    item_count++;
+
+                    // パケットあたりのオブジェクト数がMAX_NETWORK_OBJECTSに達したら部分的に送信
+                    if (item_count == MAX_NETWORK_OBJECTS)
+                    {
+                        BroadCast([.. syncData]);
+                        Console.WriteLine($"sent objects data to all clients: {syncData.Count}bytes");
+                        syncData.Clear();
+                        syncData.Add((byte)NetworkDataTypes.DataType.SYNC_OBJECT);
+                        item_count = 1;
+                    }
+                }
+
+                // 全クライアントに送信
+                if (syncData.Count > 1)
+                {
+                    BroadCast([.. syncData]);
+                    Console.WriteLine($"sent objects data to all clients: {syncData.Count}bytes");
+                }
             }
 
-            // 全クライアントに送信
-            BroadCast(syncData);
-            Console.WriteLine("sent objects data to all clients");
         }
     }
 

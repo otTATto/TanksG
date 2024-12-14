@@ -1,40 +1,68 @@
+
 public class CartridgeSpawner
 {
-    public float shellSpawnInterval = 5f;
-    public float mineSpawnInterval = 15f;
-    public float spawnAreaWidth = 40f;
-    public float spawnAreaHeight = 40f;
-    public float heightOffset = 1f;
+    private const float shellSpawnInterval = 5f;
+    private const float mineSpawnInterval = 15f;
+    private const float spawnAreaWidth = 40f;
+    private const float spawnAreaHeight = 40f;
+    private const float heightOffset = 1f;
 
-    // private void SpawnShellCartridge()
-    // {
-    //     Vector3 randomPosition = new Vector3(
-    //         UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
-    //         heightOffset,
-    //         UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
-    //     );
-    // }
-
-    public byte[] SpawnShellCartridge()
+    public static async Task<byte[]> SpawnShellCartridgeAsync(int objectId, Random rnd)
     {
-        byte[] data = new byte[48];
+        byte[] data = new byte[Server.OBJECT_DATA_SIZE];
+
+        await Task.Delay((int)(shellSpawnInterval * 1000));
+
+        // 弾丸のデータを生成
+        // objectId
+        BitConverter.GetBytes(objectId).CopyTo(data, 0);
+        // objectType
+        BitConverter.GetBytes((int)NetworkDataTypes.ObjectType.SHELL_CARTIDGE).CopyTo(data, 4);
+
+        // position
+        float x, y, z;
+        x = (rnd.NextSingle() - 0.5f) * spawnAreaWidth;
+        y = heightOffset;
+        z = (rnd.NextSingle() - 0.5f) * spawnAreaHeight;
+        BitConverter.GetBytes(x).CopyTo(data, 8);
+        BitConverter.GetBytes(y).CopyTo(data, 12);
+        BitConverter.GetBytes(z).CopyTo(data, 16);
+
+        // rotation
+        BitConverter.GetBytes(0).CopyTo(data, 20);
+        BitConverter.GetBytes(0).CopyTo(data, 24);
+        BitConverter.GetBytes(0).CopyTo(data, 28);
+        BitConverter.GetBytes(1).CopyTo(data, 32);
+
         return data;
     }
 
-    // private void SpawnMineCartridge()
-    // {
-    //     Vector3 randomPosition = new(
-    //         UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
-    //         heightOffset,
-    //         UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
-    //     );
-
-    //     Instantiate(mineCartridgePrefab, randomPosition, Quaternion.identity);
-    // }
-
-    public byte[] SpawnMineCartridge()
+    public static async Task<byte[]> SpawnMineCartridgeAsync(int objectId, Random rnd)
     {
-        byte[] data = new byte[48];
+        await Task.Delay((int)(mineSpawnInterval * 1000));
+        byte[] data = new byte[Server.OBJECT_DATA_SIZE];
+
+        // 地雷のデータを生成
+        // objectId
+        BitConverter.GetBytes(objectId).CopyTo(data, 0);
+        // objectType
+        BitConverter.GetBytes((int)NetworkDataTypes.ObjectType.MINE_CARTIDGE).CopyTo(data, 4);
+
+        // position
+        float x, y, z;
+        x = (rnd.NextSingle() - 0.5f) * spawnAreaWidth;
+        y = heightOffset;
+        z = (rnd.NextSingle() - 0.5f) * spawnAreaHeight;
+        BitConverter.GetBytes(x).CopyTo(data, 8);
+        BitConverter.GetBytes(y).CopyTo(data, 12);
+        BitConverter.GetBytes(z).CopyTo(data, 16);
+
+        // rotation
+        BitConverter.GetBytes(0).CopyTo(data, 20);
+        BitConverter.GetBytes(0).CopyTo(data, 24);
+        BitConverter.GetBytes(0).CopyTo(data, 28);
+        BitConverter.GetBytes(1).CopyTo(data, 32);
+
         return data;
     }
 }
