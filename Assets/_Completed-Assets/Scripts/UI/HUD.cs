@@ -5,7 +5,7 @@ using UnityEngine.UI;
 namespace Complete
 {
     public class HUD : MonoBehaviour
-    {   
+    {
         private TankShooting tankShooting; // 砲弾ストック数を管理するコンポーネント
 
         private TankHealth playerHealth;
@@ -25,6 +25,7 @@ namespace Complete
 
         private static int maxMines = 3;
         public GameObject[] minesObjects = new GameObject[maxMines];  // 地雷のアイコン
+        public GameObject PlayerHealthSlider_2nd;  // 2つ目のプレイヤーの体力インジケータ
 
         private void Start()
         {
@@ -46,6 +47,7 @@ namespace Complete
                 }
             }
 
+
             tankShooting = manager.m_Tanks[0].m_Instance.GetComponent<TankShooting>();
 
             // 10の位のアイコンを取得
@@ -60,6 +62,7 @@ namespace Complete
                 tensObjects[i - 1] = shellCount;
             }
 
+
             // 1の位のアイコンを取得
             for (int i = 1; i <= onesMax; i++)
             {
@@ -72,6 +75,7 @@ namespace Complete
                 onesObjects[i - 1] = shellCount;
             }
 
+
             // 地雷のアイコンを取得
             for (int i = 1; i <= maxMines; i++)
             {
@@ -83,6 +87,12 @@ namespace Complete
                 }
                 minesObjects[i - 1] = mineCount;
             }
+
+
+            // 使用中のアイテムIDを取得
+            int currentItemID = ItemManager.Instance.CurrentItemID;
+            // アイテムIDに応じて効果を適用
+            ApplyItemEffect(currentItemID);
         }
 
         private void Update()
@@ -92,11 +102,55 @@ namespace Complete
             UpdateHealth();
         }
 
-        private void UpdateHealth() {
-            playerHealthSlider.value = playerHealth.GetHealth();
+        private void UpdateHealth()
+        {
+            // 相手の体力を更新
             for (int i = 0; i < manager.m_Tanks.Length - 1; i++)
             {
                 opponentSlider[i].value = opponetHealth[i].GetHealth();
+            }
+
+            // アイテムIDを取得
+            int currentItemID = ItemManager.Instance.CurrentItemID;
+            // 装甲強化アイテムを使用中の場合
+            if (currentItemID == 2)
+            {
+                // 2つ目のプレイヤーの体力インジケータを表示
+                PlayerHealthSlider_2nd.SetActive(true);
+
+                if (playerHealth.GetHealth() >= 100)
+                {
+                    // 残り HP が 100 を超えるとき
+                    // 1つ目のプレイヤーの体力インジケータを更新
+                    playerHealthSlider.value = playerHealth.GetHealth() - 100;
+                    // 2つ目のプレイヤーの体力インジケータを更新
+                    PlayerHealthSlider_2nd.GetComponent<Slider>().value = 100;
+                }
+                else
+                {
+                    // 残り HP が 100 未満のとき
+                    // 1つ目のプレイヤーの体力インジケータを更新
+                    playerHealthSlider.value = 0;
+                    // 2つ目のプレイヤーの体力インジケータを更新
+                    PlayerHealthSlider_2nd.GetComponent<Slider>().value = playerHealth.GetHealth();
+                }
+
+
+                // 自機の体力が 0 になったら，アイテム効果を解除
+                if (playerHealth.GetHealth() <= 0)
+                {
+                    ItemManager.Instance.SetItemID(-1); // アイテムIDをリセット
+                    RemoveArmorEnhancement();           // 装甲強化アイテムの効果を解除
+                }
+            }
+            else
+            {
+                // 自機の体力を更新
+                playerHealthSlider.value = playerHealth.GetHealth();
+                Debug.Log($"HP: {playerHealth.GetHealth()}");
+
+                // 2つ目のプレイヤーの体力インジケータを非表示
+                PlayerHealthSlider_2nd.SetActive(false);
             }
         }
 
@@ -127,6 +181,39 @@ namespace Complete
             {
                 minesObjects[i - 1].SetActive(i <= remainingMines);
             }
+        }
+
+        // アイテムIDに応じて効果を適用
+        private void ApplyItemEffect(int itemID)
+        {
+            switch (itemID)
+            {
+                case 2:
+                    // 装甲強化アイテム使用時
+                    ApplyArmorEnhancement();    // 装甲強化アイテムの効果を適用
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        // 装甲強化アイテムの効果を適用
+        private void ApplyArmorEnhancement()
+        {
+            // プレイヤーの体力の最大値を 200 に設定
+            playerHealth.m_StartingHealth = 200f;
+            playerHealth.SetHealth(playerHealth.m_StartingHealth);
+            // 2つ目のインジケータを表示
+
+        }
+
+        // 装甲強化アイテムの効果を解除
+        private void RemoveArmorEnhancement()
+        {
+            // プレイヤーの体力の最大値を 100 に設定
+            playerHealth.m_StartingHealth = 100f;
+            playerHealth.SetHealth(playerHealth.m_StartingHealth);
+            // 2つ目のインジケータを非表示
         }
     }
 }

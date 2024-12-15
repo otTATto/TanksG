@@ -36,6 +36,12 @@ namespace Complete
             return (m_CurrentHealth);
         }
 
+        public void SetHealth(float health)
+        {
+            m_CurrentHealth = health;
+            SetHealthUI();
+        }
+
 
 
         private void OnEnable()

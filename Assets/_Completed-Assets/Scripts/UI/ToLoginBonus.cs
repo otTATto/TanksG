@@ -4,61 +4,36 @@ using UnityEngine.SceneManagement;
 using TMPro;
 using UnityEngine.Networking;
 using System.Collections;
-using System;
 
-public class StartButton : MonoBehaviour
+public class ToLoginBonus : MonoBehaviour
 {
     public TMP_InputField userIdInputField;  // ユーザーID入力フィールド
     public Button startButton;
-    public TMP_Text warningText;  // TMP_Text（警告テキスト）
-    private IDDisplayer iDDisplayer;
-    private const string BASE_URL = "localhost";
-    private const string PORT = "8000";
-    private const string API_PATH = "api/gameusers";
-    private string registerURL => $"http://{BASE_URL}:{PORT}/{API_PATH}";
+    public TMP_Text warningText;  // 警告テキスト
 
-    [System.Serializable]
-    private class RegisterResponse
+    private void Awake()
     {
-        public bool success;
-        public int id;
-        public string uuid;
-        public string error;
-    }
-
-    private void Start()
-    {
-        iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
-        // スタートボタンクリック時の処理を登録
         startButton = GetComponent<Button>();
-        startButton.onClick.AddListener(() => {
-            // ログインの処理
-            OnLoginButtonClicked(); 
-            // アイテムIDをリセット
-            ItemManager.Instance.SetItemID(-1);
-        });
+        startButton.onClick.AddListener(OnLoginButtonClicked);
         warningText.gameObject.SetActive(false);  // 初期は警告を非表示
     }
 
     private void OnLoginButtonClicked()
     {
-        //int userId;
-
-        if (string.IsNullOrEmpty(iDDisplayer.GetUserUuid()))
+        int userId;
+        if (int.TryParse(userIdInputField.text, out userId))
         {
-            StartCoroutine(RegisterNewPlayer());
+            // ユーザーIDを保持
+            UserManager.Instance.SetUserID(userId);
+            // アカウント停止チェック
+            StartCoroutine(CheckAccountSuspended(userId));
         }
         else
         {
-            // ユーザーIDが正しい場合、APIを呼び出して状態を確認
-            StartCoroutine(CheckAccountSuspended(iDDisplayer.GetPlayerID()));
+            // ユーザーIDが無効な場合
+            warningText.text = "Invalid User ID";
+            warningText.gameObject.SetActive(true);
         }
-        //else
-        //{
-        //    // ユーザーIDが無効な場合
-        //    warningText.text = "Invalid User ID";
-        //    warningText.gameObject.SetActive(true);
-        //}
     }
 
     // アカウント停止確認コルーチン
@@ -92,54 +67,6 @@ public class StartButton : MonoBehaviour
         }
     }
 
-    IEnumerator RegisterNewPlayer()
-    {
-        Debug.Log($"Attempting to connect to: {registerURL}");
-
-        WWWForm form = new WWWForm();
-        form.AddField("name", "NONAME");
-
-        using (UnityWebRequest www = UnityWebRequest.Post(registerURL, form))
-        {
-            yield return www.SendWebRequest();
-
-            if (www.result == UnityWebRequest.Result.Success)
-            {
-                string response = www.downloadHandler.text;
-                Debug.Log($"Response: {response}");
-                try
-                {
-                    RegisterResponse registerData = JsonUtility.FromJson<RegisterResponse>(response);
-
-                    if (registerData.success)
-                    {
-                        iDDisplayer.SetUserUuid(registerData.uuid);
-                        iDDisplayer.SetPlayerIDandName(registerData.id, "NONAME");
-
-                        Debug.Log($"登録成功！ ID: {registerData.id}, UUID: {registerData.uuid}");
-                        SceneManager.LoadScene(SceneNames.HomeScene);
-                    }
-                    else
-                    {
-                        Debug.LogError($"登録エラー: {registerData.error}");
-                    }
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError($"JSONパースエラー: {e.Message}");
-                    Debug.LogError($"Response: {response}");
-                }
-            }
-            else
-            {
-                Debug.LogError($"通信エラー: {www.error}");
-                Debug.LogError($"Response Code: {www.responseCode}");
-                Debug.LogError($"Response Text: {www.downloadHandler.text}");
-            }
-        }
-    }
-
-    // アカウント停止状態のレスポンス用クラス
     // ログイン状況確認コルーチン
     private IEnumerator CheckLoginStatus(int userId)
     {

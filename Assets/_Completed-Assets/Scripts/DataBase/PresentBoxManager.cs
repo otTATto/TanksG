@@ -37,7 +37,7 @@ public class PresentBoxManager : MonoBehaviour
     [System.Serializable]
     public class PresentData
     {
-        public int gift_id;          // プレゼントID
+        public int gift_id;          // プレゼントID//
         public string item_name;     // アイテム名
         public int quantity;         // 配布数
         public string distributed_at; // 配布日時

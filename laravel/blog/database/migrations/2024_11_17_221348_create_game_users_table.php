@@ -18,6 +18,7 @@ class CreateGameUsersTable extends Migration // クラス名も変更
             $table->uuid('uuid')->unique();
             $table->string('name')->default('NoName');
             $table->boolean('is_suspended')->default(false); // アカウント停止情報
+            $table->integer('stamina')->default(3);             // スタミナ
             $table->timestamps(); // 作成日時・更新日時
         });
     }
