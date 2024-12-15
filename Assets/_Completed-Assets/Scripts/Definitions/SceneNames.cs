@@ -10,4 +10,5 @@ public class SceneNames
     public const string UserReistration = "UserReistration";
     public const string Ranking = "Ranking";
     public const string LoginBonusScene = "LoginBonusScene";
+    public const string LobbyScene = "LobbyScene";
 }

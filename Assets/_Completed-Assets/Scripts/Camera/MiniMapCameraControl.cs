@@ -25,10 +25,11 @@ namespace Complete
             // カメラの追跡対象が存在する場合
             if (m_Targets.Length > 0)
             {
+                int playerId = Client.instance.playerId;
                 // カメラの位置を設定
-                transform.position = m_Targets[0].position;
+                transform.position = m_Targets[playerId].position;
                 // カメラの向きを設定
-                transform.rotation = m_Targets[0].rotation;
+                transform.rotation = m_Targets[playerId].rotation;
             }
             else
             {

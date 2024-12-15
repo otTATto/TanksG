@@ -1,7 +1,8 @@
 using System.Collections;
 using UnityEngine;
+using System;
 
-public class ShellCartridgeSpawner : MonoBehaviour
+public class CartridgeSpawner : MonoBehaviour
 {
     public GameObject shellCartridgePrefab;
     public GameObject mineCartridgePrefab;
@@ -16,6 +17,7 @@ public class ShellCartridgeSpawner : MonoBehaviour
 
     private void Update()
     {
+
         mineTimer += Time.deltaTime;
         shellTimer += Time.deltaTime;
         
@@ -35,9 +37,9 @@ public class ShellCartridgeSpawner : MonoBehaviour
     private void SpawnShellCartridge()
     {
         Vector3 randomPosition = new Vector3(
-            Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
+            UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
             heightOffset,
-            Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
+            UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
         );
 
         Instantiate(shellCartridgePrefab, randomPosition, Quaternion.identity);
@@ -45,10 +47,10 @@ public class ShellCartridgeSpawner : MonoBehaviour
 
     private void SpawnMineCartridge()
     {
-        Vector3 randomPosition = new Vector3(
-            Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
+        Vector3 randomPosition = new(
+            UnityEngine.Random.Range(-spawnAreaWidth/2, spawnAreaWidth/2),
             heightOffset,
-            Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
+            UnityEngine.Random.Range(-spawnAreaHeight/2, spawnAreaHeight/2)
         );
 
         Instantiate(mineCartridgePrefab, randomPosition, Quaternion.identity);

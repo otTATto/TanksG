@@ -24,13 +24,14 @@ public class MineCartridge : MonoBehaviour
         if (timer >= blinkStartTime)
         {
             // 点滅開始
-            var repeatValue = Mathf.Repeat((float)timer, cycleTime);
-            meshRenderer.enabled = (repeatValue >= cycleTime * 0.5f);
+            var repeatValue = Mathf.Repeat(timer, cycleTime);
+            meshRenderer.enabled = repeatValue >= cycleTime * 0.5f;
         }
 
         if (timer >= lifeTime)
         {
-            Destroy(gameObject);
+            int objectId = int.Parse(gameObject.name.Split('_')[1]);
+            Client.instance.DestroyNetworkObject(objectId);
         }
     }
 
@@ -46,8 +47,10 @@ public class MineCartridge : MonoBehaviour
                     tankShooting.m_RemainingMines + mineAmount,
                     tankShooting.m_MineCapacity
                 );
-                Destroy(gameObject);
-                // Debug.Log(tankShooting.m_RemainingMines);
+                int objectId = int.Parse(gameObject.name.Split('_')[1]);
+                // 取得したのが自分のtankなら削除データを送信
+                bool sendDestroyData = tankShooting.m_PlayerNumber == Client.instance.playerId + 1;
+                Client.instance.DestroyNetworkObject(objectId, sendDestroyData);
             }
         }
     }

@@ -1,10 +1,11 @@
 ﻿using UnityEngine;
+using System;
 
 namespace Complete
 {
     public class TankMovement : MonoBehaviour
     {
-        public int m_PlayerNumber = 1;              // Used to identify which tank belongs to which player.  This is set by this tank's manager.
+        public int m_PlayerNumber = -1;              // Used to identify which tank belongs to which player.  This is set by this tank's manager.
         public float m_Speed = 12f;                 // How fast the tank moves forward and back.
         public float m_TurnSpeed = 180f;            // How fast the tank turns in degrees per second.
         public AudioSource m_MovementAudio;         // Reference to the audio source used to play engine sounds. NB: different to the shooting audio source.
@@ -25,10 +26,7 @@ namespace Complete
         private float m_TurretTurnInputValue;             //砲台の回転入力 
         private string m_TurretTurnAxisName;                //砲塔を回転するキーのName
 
-        private void TurretTurn (){
-            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
-            m_Turret.transform.Rotate(0f,turn,0f);//回転
-        }
+        public bool isPlayerObject = false;
 
         private void Awake ()
         {
@@ -78,15 +76,18 @@ namespace Complete
         private void Start ()
         {
             // The axes names are based on player number.
-            m_MovementAxisName = "Vertical" + m_PlayerNumber;
-            m_TurnAxisName = "Horizontal" + m_PlayerNumber;
-            m_TurretTurnAxisName = "TurretTurn"+m_PlayerNumber  ;
+            m_MovementAxisName = "Vertical1";
+            m_TurnAxisName = "Horizontal1";
+            m_TurretTurnAxisName = "TurretTurn1";
             // Store the original pitch of the audio source.
             m_OriginalPitch = m_MovementAudio.pitch;
         }
 
         private void Update ()
         {
+            // クライアントの場合は、自分のオブジェクトかどうかを確認
+            if (!isPlayerObject) return;
+
             // Store the value of both input axes.
             m_MovementInputValue = Input.GetAxis (m_MovementAxisName);
             m_TurnInputValue = Input.GetAxis (m_TurnAxisName);
@@ -106,8 +107,8 @@ namespace Complete
                 {
                     // ... change the clip to idling and play it.
                     m_MovementAudio.clip = m_EngineIdling;
-                    m_MovementAudio.pitch = Random.Range (m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
-                    m_MovementAudio.Play ();
+                    m_MovementAudio.pitch = UnityEngine.Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
+                    m_MovementAudio.Play();
                 }
             }
             else
@@ -117,7 +118,7 @@ namespace Complete
                 {
                     // ... change the clip to driving and play.
                     m_MovementAudio.clip = m_EngineDriving;
-                    m_MovementAudio.pitch = Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
+                    m_MovementAudio.pitch = UnityEngine.Random.Range(m_OriginalPitch - m_PitchRange, m_OriginalPitch + m_PitchRange);
                     m_MovementAudio.Play();
                 }
             }
@@ -126,6 +127,9 @@ namespace Complete
 
         private void FixedUpdate ()
         {
+            // 自分のオブジェクトかどうかを確認
+            if (!isPlayerObject) return;
+
             // Adjust the rigidbodies position and orientation in FixedUpdate.
             Move ();
             Turn ();
@@ -137,9 +141,12 @@ namespace Complete
         {
             // Create a vector in the direction the tank is facing with a magnitude based on the input, speed and the time between frames.
             Vector3 movement = transform.forward * m_MovementInputValue * m_Speed * Time.deltaTime;
+            if (movement == Vector3.zero) return;
+
+            Vector3 position = m_Rigidbody.position + movement;
 
             // Apply this movement to the rigidbody's position.
-            m_Rigidbody.MovePosition(m_Rigidbody.position + movement);
+            m_Rigidbody.MovePosition(position);
         }
 
 
@@ -147,12 +154,24 @@ namespace Complete
         {
             // Determine the number of degrees to be turned based on the input, speed and time between frames.
             float turn = m_TurnInputValue * m_TurnSpeed * Time.deltaTime;
+            if (turn == 0f) return;
 
-            // Make this into a rotation in the y axis.
+            // Create a rotation in the y axis.
             Quaternion turnRotation = Quaternion.Euler (0f, turn, 0f);
+            Quaternion rotation = m_Rigidbody.rotation * turnRotation;
 
             // Apply this rotation to the rigidbody's rotation.
-            m_Rigidbody.MoveRotation (m_Rigidbody.rotation * turnRotation);
+            m_Rigidbody.MoveRotation(rotation);
+        }
+
+        private void TurretTurn ()
+        {
+            float turn = m_TurretTurnInputValue * m_TurretTurnSpeed * Time.deltaTime; //回転量の計算
+            if (turn == 0f) return;
+
+            Quaternion turretRotation = Quaternion.Euler(0f, turn, 0f);
+
+            m_Turret.transform.Rotate(0f, turn, 0f); //回転
         }
     }
 }

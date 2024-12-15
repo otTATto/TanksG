@@ -46,17 +46,38 @@ namespace Complete
             StartCoroutine (GameLoop ());
         }
 
-
         private void SpawnAllTanks()
         {
+            Rigidbody[] m_Rigidbodies = new Rigidbody[m_Tanks.Length];
+            GameObject[] m_Turrets = new GameObject[m_Tanks.Length];
+
             // For all the tanks...
             for (int i = 0; i < m_Tanks.Length; i++)
             {
                 // ... create them, set their player number and references needed for control.
-                m_Tanks[i].m_Instance =
-                    Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
+                // 自分の戦車の場合
+                if (i == Client.instance.playerId)
+                {
+                    m_Tanks[i].m_Instance = Client.instance.InstantiateNetworkObject(
+                        (int)NetworkDataTypes.ObjectType.TANK,
+                        m_Tanks[i].m_SpawnPoint.position,
+                        m_Tanks[i].m_SpawnPoint.rotation
+                    );
+                }
+                // 自分の戦車でない場合
+                else
+                {
+                    m_Tanks[i].m_Instance =
+                        Instantiate(m_TankPrefab, m_Tanks[i].m_SpawnPoint.position, m_Tanks[i].m_SpawnPoint.rotation) as GameObject;
+                    Client.instance.networkObjects.Add(i, m_Tanks[i].m_Instance);
+                    Client.instance.networkObjectTypes.Add(i, (int)NetworkDataTypes.ObjectType.TANK);
+                    Client.instance.otherNetworkObjects.Add(i);
+                }
                 m_Tanks[i].m_PlayerNumber = i + 1;
                 m_Tanks[i].Setup();
+
+                m_Rigidbodies[i] = m_Tanks[i].m_Instance.GetComponent<Rigidbody>();
+                m_Turrets[i] = m_Tanks[i].m_Instance.GetComponent<TankMovement>().m_Turret;
             }
         }
 
@@ -66,14 +87,8 @@ namespace Complete
             // Create a collection of transforms the same size as the number of tanks.
             Transform[] targets = new Transform[m_Tanks.Length];
             targets[0]=m_Tanks[0].m_Movement.m_Turret.transform;
-            /*
-            // For each of these transforms...
-            for (int i = 0; i < targets.Length; i++)
-            {
-                // ... set it to the appropriate tank transform.
-                targets[i] = m_Tanks[i].m_Instance.transform;
-            }
-            */
+            targets[1]=m_Tanks[1].m_Movement.m_Turret.transform;
+            
             // These are the targets the camera should follow.
             m_CameraControl.m_Targets = targets;
             // ミニマップ用のカメラにもターゲットを設定
@@ -106,6 +121,8 @@ namespace Complete
                 m_RankingPanel.gameObject.SetActive(true);
                 if (m_RankingManager == null) { Debug.Log("m_RankingManager nexsit"); }
                 m_RankingManager.UpdateScoreAndFetchRanking(m_isPlayerWin);
+                // ゲーム終了メッセージを送信
+                
             }
             else
             {
@@ -136,6 +153,7 @@ namespace Complete
 
         private IEnumerator RoundPlaying ()
         {
+            Client.instance.isGamePlaying = true;
             // As soon as the round begins playing let the players control the tanks.
             EnableTankControl ();
 
@@ -153,6 +171,7 @@ namespace Complete
 
         private IEnumerator RoundEnding ()
         {
+            Client.instance.isGamePlaying = false;
             for (int i = 0; i < m_Tanks.Length; i++)
             {
                 // 残弾数を0にして残弾数の表示を停止
@@ -231,7 +250,9 @@ namespace Complete
             {
                 // ... and if one of them has enough rounds to win the game, return it.
                 if (m_Tanks[i].m_Wins == m_NumRoundsToWin)
+                {
                     return m_Tanks[i];
+                }
             }
 
             // If no tanks have enough rounds to win, return null.
