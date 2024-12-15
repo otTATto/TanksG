@@ -35,7 +35,7 @@ public class UserReistration : MonoBehaviour
     }
     public void BacktoTitle()
     {
-        SceneManager.LoadScene("Login");
+        SceneManager.LoadScene(SceneNames.HomeScene);
     }
 
     void ValidateInput(string input)

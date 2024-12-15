@@ -13,4 +13,10 @@ public class VersusPlayerButton : MonoBehaviour
             SceneManager.LoadScene(SceneNames.GameScene);
         });
     }
+    public void ToUserReistration()
+    {
+
+        SceneManager.LoadScene(SceneNames.UserReistration);
+
+    }
 }
