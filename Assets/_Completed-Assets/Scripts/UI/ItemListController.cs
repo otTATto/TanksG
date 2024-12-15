@@ -219,6 +219,22 @@ public class ItemListController : MonoBehaviour
             yield break;
         }
 
+        // スタミナ回復アイテムを使おうとしたとき
+        if (itemId == 1)
+        {
+            // スタミナがMAXの場合は使用できない旨を表示
+            StartCoroutine(GetStamina());   // スタミナを取得
+            if (currentStamina >= 5)
+            {
+                // アイテム使用不可ダイアログを表示
+                itemCannotUseDialog.SetActive(true);
+                // 詳細を表示
+                string detailMessage = "スタミナはこれ以上回復できません。";
+                itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
+                yield break;
+            }
+        }
+
         // すでに使用中の場合は使用できない旨を表示
         int currentItemId = ItemManager.Instance.CurrentItemID;
         if (currentItemId == itemId)
@@ -227,18 +243,6 @@ public class ItemListController : MonoBehaviour
             itemCannotUseDialog.SetActive(true);
             // 詳細を表示
             string detailMessage = "既に効果が適用されています。";
-            itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
-            yield break;
-        }
-
-        // スタミナがMAXの場合は使用できない旨を表示
-        StartCoroutine(GetStamina());   // スタミナを取得
-        if (currentStamina >= 5)
-        {
-            // アイテム使用不可ダイアログを表示
-            itemCannotUseDialog.SetActive(true);
-            // 詳細を表示
-            string detailMessage = "スタミナはこれ以上回復できません。";
             itemCannotUseDialog.transform.Find("DetailMessage").GetComponent<TextMeshProUGUI>().text = detailMessage;
             yield break;
         }
