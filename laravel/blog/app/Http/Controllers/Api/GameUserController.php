@@ -199,7 +199,7 @@ class GameUserController extends Controller
                          ->chunk(100, function($stats) use (&$rank) {
                              foreach ($stats as $stat) {
                                  $total = $stat->wincount + $stat->losecount;
-                                 if($total > 3){
+                                 if($total > 9){
                                  $stat->ranking = $rank++;
                                  $stat->save();
                                 }
