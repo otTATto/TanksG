@@ -35,7 +35,7 @@ public class LoginBonus : MonoBehaviour, IPointerClickHandler // IPointerClickHa
 
     void Start()
     {
-        int userId = UserManager.Instance.CurrentUserID;
+        int userId = IDDisplayer.Instance.GetPlayerID();
         StartCoroutine(SetupLoginBonusUI(userId));
     }
 

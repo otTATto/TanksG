@@ -117,7 +117,7 @@ public class StartButton : MonoBehaviour
                         iDDisplayer.SetPlayerIDandName(registerData.id, "NONAME");
 
                         Debug.Log($"登録成功！ ID: {registerData.id}, UUID: {registerData.uuid}");
-                        SceneManager.LoadScene(SceneNames.HomeScene);
+                        StartCoroutine(ReceiveBonus(registerData.id));
                     }
                     else
                     {
