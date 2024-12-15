@@ -198,8 +198,11 @@ class GameUserController extends Controller
                          ->orderBy('wincount', 'desc')
                          ->chunk(100, function($stats) use (&$rank) {
                              foreach ($stats as $stat) {
+                                 $total = $stat->wincount + $stat->losecount;
+                                 if($total > 3){
                                  $stat->ranking = $rank++;
                                  $stat->save();
+                                }
                              }
                          });
                 
@@ -225,17 +228,18 @@ class GameUserController extends Controller
                 
                 // 上位10名を取得
                 $players = GameUser::join('player_stats', 'game_users.id', '=', 'player_stats.game_user_id')
-                                  ->orderBy('player_stats.ranking', 'asc')
-                                  ->take(10)
-                                  ->get([
-                                      'game_users.id',
-                                      'game_users.name as playername',
-                                      'player_stats.ranking',
-                                      \DB::raw('CAST(player_stats.winrate AS DECIMAL(5,2)) as winrate'),
-                                      'player_stats.wincount',
-                                      'player_stats.losecount'
-                                  ])
-                                  ->toArray();
+                   ->where('player_stats.ranking', '>', 0) // ranking が 0 より大きいものを取得
+                   ->orderBy('player_stats.ranking', 'asc')
+                   ->take(10)
+                   ->get([
+                       'game_users.id',
+                       'game_users.name as playername',
+                       'player_stats.ranking',
+                       \DB::raw('CAST(player_stats.winrate AS DECIMAL(5,2)) as winrate'),
+                       'player_stats.wincount',
+                       'player_stats.losecount'
+                   ])
+                   ->toArray();
                 
                 \DB::commit();
                 

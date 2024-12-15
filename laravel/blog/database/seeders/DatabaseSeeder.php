@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
         // UserItemsTableSeeder を読み込むように指定
         $this->call(UserItemsTableSeeder::class);
         $this->call(LoginBonusMasterSeeder::class);
+        //PlayertSatsSeeder を読み込むように指定
+        $this->call(PlayerStatsSeeder::class);
         
     }
 }

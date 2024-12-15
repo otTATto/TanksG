@@ -124,7 +124,7 @@ public class RankingManager : MonoBehaviour
             GameObject rankingInstance = Instantiate(rankingBorder, rankingPoint);
             TMP_Text tmpText = rankingInstance.GetComponentInChildren<TMP_Text>();
 
-            if (tmpText != null)
+            if (tmpText != null && playerData.ranking != 0)
             {
                 tmpText.text = $"#{playerData.ranking} " +
                 $"id:{playerData.id} "+
