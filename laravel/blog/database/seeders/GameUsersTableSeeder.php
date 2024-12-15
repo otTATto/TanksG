@@ -37,6 +37,76 @@ class GameUsersTableSeeder extends Seeder
                 'is_suspended' => 0,
                 'stamina' => 3
             ],
+            [
+                'id' => 4,
+                'uuid' => Str::uuid(),
+                'name' => '4', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 5, 
+                'uuid' => Str::uuid(),
+                'name' => '5', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 6, 
+                'uuid' => Str::uuid(),
+                'name' => '6', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 7, 
+                'uuid' => Str::uuid(),
+                'name' => '7', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 8, 
+                'uuid' => Str::uuid(),
+                'name' => '8', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 9, 
+                'uuid' => Str::uuid(),
+                'name' => '9', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 10, 
+                'uuid' => Str::uuid(),
+                'name' => '10', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 11, 
+                'uuid' => Str::uuid(),
+                'name' => '11', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 12, 
+                'uuid' => Str::uuid(),
+                'name' => '12', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ],
+            [
+                'id' => 13, 
+                'uuid' => Str::uuid(),
+                'name' => '13', 
+                'is_suspended' => 0,
+                'stamina' => 3
+            ]
         ];
 
         // マスターデータを登録
