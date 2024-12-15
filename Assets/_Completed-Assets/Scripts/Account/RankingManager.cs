@@ -33,7 +33,7 @@ public class RankingManager : MonoBehaviour
 
     public void ToTitle() 
     {
-        SceneManager.LoadScene(SceneNames.Login);
+        SceneManager.LoadScene(SceneNames.HomeScene);
     }
 
     IEnumerator UpdateAndFetch(int playerId, int isPlayerWin)
