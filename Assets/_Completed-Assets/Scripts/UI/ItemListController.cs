@@ -27,6 +27,7 @@ public class ItemListController : MonoBehaviour
 
     private List<Item> itemList = new List<Item>(); // アイテムリスト
     private int currentStamina;                     // 現在のスタミナ
+    private IDDisplayer iDDisplayer;                //ユーザーIDのインスタンス
 
     // API URL
     private string gameUserItemApiURL = "http://localhost:8000/api/game-users/{0}/items";
@@ -44,7 +45,8 @@ public class ItemListController : MonoBehaviour
     }
 
     private void Start()
-    { 
+    {
+        iDDisplayer = IDDisplayer.Instance.GetComponent<IDDisplayer>();
         // ユーザーのアイテムをロードして表示
         LoadUserItems();
 
@@ -122,7 +124,7 @@ public class ItemListController : MonoBehaviour
     public void LoadUserItems ()
     {
         // ユーザーIDを取得
-        int userId = UserManager.Instance.CurrentUserID;
+        int userId = iDDisplayer.GetPlayerID();
         Debug.Log($"get User ID: {userId}");
 
         // ユーザーのアイテムを取得
@@ -252,7 +254,7 @@ public class ItemListController : MonoBehaviour
     private IEnumerator UseItem(int itemId)
     {
         // ユーザーIDを取得
-        int userId = UserManager.Instance.CurrentUserID;
+        int userId = iDDisplayer.GetPlayerID();
 
         // APIのURLを作成
         string url = string.Format(gameUserItemUseApiURL, userId, itemId);
@@ -357,7 +359,7 @@ public class ItemListController : MonoBehaviour
     private IEnumerator GetStamina()
     {
         // api URL
-        int userId = UserManager.Instance.CurrentUserID;
+        int userId = iDDisplayer.GetPlayerID();
         string apiURL = gameUserStaminaApiURL + "/get";
         string url = string.Format(apiURL, userId);
 
@@ -385,7 +387,7 @@ public class ItemListController : MonoBehaviour
     private IEnumerator RecoverStamina()
     {
         // api URL
-        int userId = UserManager.Instance.CurrentUserID;
+        int userId = iDDisplayer.GetPlayerID();
         string apiURL = gameUserStaminaApiURL + "/recover";
         string url = string.Format(apiURL, userId);
 
