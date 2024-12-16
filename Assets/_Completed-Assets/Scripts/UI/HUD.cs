@@ -90,9 +90,9 @@ namespace Complete
 
 
             // 使用中のアイテムIDを取得
-            int currentItemID = ItemManager.Instance.CurrentItemID;
+            // int currentItemID = ItemManager.Instance.CurrentItemID;
             // アイテムIDに応じて効果を適用
-            ApplyItemEffect(currentItemID);
+            // ApplyItemEffect(currentItemID);
         }
 
         private void Update()
@@ -111,47 +111,48 @@ namespace Complete
             }
 
             // アイテムIDを取得
-            int currentItemID = ItemManager.Instance.CurrentItemID;
+            // int currentItemID = ItemManager.Instance.CurrentItemID;
             // 装甲強化アイテムを使用中の場合
-            if (currentItemID == 2)
-            {
-                // 2つ目のプレイヤーの体力インジケータを表示
-                PlayerHealthSlider_2nd.SetActive(true);
+            // if (currentItemID == 2)
+            // {
+            //     // 2つ目のプレイヤーの体力インジケータを表示
+            //     PlayerHealthSlider_2nd.SetActive(true);
 
-                if (playerHealth.GetHealth() >= 100)
-                {
-                    // 残り HP が 100 を超えるとき
-                    // 1つ目のプレイヤーの体力インジケータを更新
-                    playerHealthSlider.value = playerHealth.GetHealth() - 100;
-                    // 2つ目のプレイヤーの体力インジケータを更新
-                    PlayerHealthSlider_2nd.GetComponent<Slider>().value = 100;
-                }
-                else
-                {
-                    // 残り HP が 100 未満のとき
-                    // 1つ目のプレイヤーの体力インジケータを更新
-                    playerHealthSlider.value = 0;
-                    // 2つ目のプレイヤーの体力インジケータを更新
-                    PlayerHealthSlider_2nd.GetComponent<Slider>().value = playerHealth.GetHealth();
-                }
+            //     if (playerHealth.GetHealth() >= 100)
+            //     {
+            //         // 残り HP が 100 を超えるとき
+            //         // 1つ目のプレイヤーの体力インジケータを更新
+            //         playerHealthSlider.value = playerHealth.GetHealth() - 100;
+            //         // 2つ目のプレイヤーの体力インジケータを更新
+            //         PlayerHealthSlider_2nd.GetComponent<Slider>().value = 100;
+            //     }
+            //     else
+            //     {
+            //         // 残り HP が 100 未満のとき
+            //         // 1つ目のプレイヤーの体力インジケータを更新
+            //         playerHealthSlider.value = 0;
+            //         // 2つ目のプレイヤーの体力インジケータを更新
+            //         PlayerHealthSlider_2nd.GetComponent<Slider>().value = playerHealth.GetHealth();
+            //     }
 
 
-                // 自機の体力が 0 になったら，アイテム効果を解除
-                if (playerHealth.GetHealth() <= 0)
-                {
-                    ItemManager.Instance.SetItemID(-1); // アイテムIDをリセット
-                    RemoveArmorEnhancement();           // 装甲強化アイテムの効果を解除
-                }
-            }
-            else
-            {
-                // 自機の体力を更新
-                playerHealthSlider.value = playerHealth.GetHealth();
-                Debug.Log($"HP: {playerHealth.GetHealth()}");
+            //     // 自機の体力が 0 になったら，アイテム効果を解除
+            //     if (playerHealth.GetHealth() <= 0)
+            //     {
+            //         ItemManager.Instance.SetItemID(-1); // アイテムIDをリセット
+            //         RemoveArmorEnhancement();           // 装甲強化アイテムの効果を解除
+            //     }
+            // }
+            // else
+            // {
+            //     // 自機の体力を更新
+            //     playerHealthSlider.value = playerHealth.GetHealth();
+            //     Debug.Log($"HP: {playerHealth.GetHealth()}");
 
-                // 2つ目のプレイヤーの体力インジケータを非表示
-                PlayerHealthSlider_2nd.SetActive(false);
-            }
+            //     // 2つ目のプレイヤーの体力インジケータを非表示
+            //     PlayerHealthSlider_2nd.SetActive(false);
+            // }
+            playerHealthSlider.value = playerHealth.GetHealth();
         }
 
         private void UpdateShellCount()

@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 using System.Net.Sockets;
 
@@ -244,14 +245,16 @@ public class Server
             // AddShellCartridgeAsync();
 
             await Task.Delay((int)(SYNC_RATE * 1000));
+            List<int> removeList = [];
 
             // 全てのオブジェクトの同期データを1つのバイト配列にまとめる
             lock (lockObject){
                 List<byte> syncData = [];
                 syncData.Add((byte)NetworkDataTypes.DataType.SYNC_OBJECT);
                 int item_count = 1;
-                foreach (byte[] objectData in syncObjectsData.Values)
+                foreach (int key in syncObjectsData.Keys)
                 {
+                    byte[] objectData = syncObjectsData[key];
                     if (objectData.Length != OBJECT_DATA_SIZE) Console.WriteLine("object data size is not 36!");
                     syncData.AddRange(objectData);
                     item_count++;
@@ -265,6 +268,10 @@ public class Server
                         syncData.Add((byte)NetworkDataTypes.DataType.SYNC_OBJECT);
                         item_count = 1;
                     }
+
+                    // 戦車のオブジェクトは削除リストに入れる
+                    int objectType = BitConverter.ToInt32(objectData, 4);
+                    if (objectType == (int)NetworkDataTypes.ObjectType.TANK) removeList.Add(key);
                 }
 
                 // 全クライアントに送信
@@ -272,6 +279,12 @@ public class Server
                 {
                     BroadCast([.. syncData]);
                     Console.WriteLine($"sent objects data to all clients: {syncData.Count}bytes");
+                }
+
+                // 送信後，不要なオブジェクト情報を削除
+                foreach (int key in removeList)
+                {
+                    syncObjectsData.Remove(key);
                 }
             }
 
