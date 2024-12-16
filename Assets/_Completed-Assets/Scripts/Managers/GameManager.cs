@@ -107,7 +107,9 @@ namespace Complete
 
             // Once execution has returned here, run the 'RoundEnding' coroutine, again don't return until it's finished.
             yield return StartCoroutine (RoundEnding());
-            if (m_GameWinner == m_Tanks[0])
+            int playerId = Client.instance.playerId;
+
+            if (m_GameWinner == m_Tanks[playerId])
             {
                 m_isPlayerWin = true;
             }

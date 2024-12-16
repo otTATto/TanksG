@@ -24,6 +24,7 @@ namespace Complete
         private Slider[] opponentSlider;
 
         private static int maxMines = 3;
+        private int opponentId;
         public GameObject[] minesObjects = new GameObject[maxMines];  // 地雷のアイコン
         public GameObject PlayerHealthSlider_2nd;  // 2つ目のプレイヤーの体力インジケータ
 
@@ -33,19 +34,16 @@ namespace Complete
             manager = gameManger.GetComponent<GameManager>();
             opponetHealth = new TankHealth[manager.m_Tanks.Length - 1];
             opponentSlider = new Slider[manager.m_Tanks.Length - 1];
-            for (int i = 0; i < manager.m_Tanks.Length; i++)
-            {
-                if (i == 0)
-                {
-                    playerHealth = manager.m_Tanks[i].m_Instance.GetComponent<TankHealth>();
-                }
-                else
-                {
-                    opponetHealth[i - 1] = manager.m_Tanks[i].m_Instance.GetComponent<TankHealth>();
-                    opponentSlider[i - 1] = Instantiate(opponentSliderPrefab, opponentSliderPlace.transform);
-                    opponentSlider[i - 1].gameObject.SetActive(true);
-                }
-            }
+            int playerId = Client.instance.playerId;
+            opponentId = (playerId == 0 ? 1 : 0);
+            playerHealth = manager.m_Tanks[playerId].m_Instance.GetComponent<TankHealth>();
+                
+                
+            opponetHealth[0] = manager.m_Tanks[opponentId].m_Instance.GetComponent<TankHealth>();
+            opponentSlider[0] = Instantiate(opponentSliderPrefab, opponentSliderPlace.transform);
+            opponentSlider[0].gameObject.SetActive(true);
+                
+            
 
 
             tankShooting = manager.m_Tanks[0].m_Instance.GetComponent<TankShooting>();
